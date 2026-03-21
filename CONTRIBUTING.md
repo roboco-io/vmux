@@ -1,87 +1,87 @@
-# 기여 가이드
+# Contributing Guide
 
-vmux 프로젝트에 기여해 주셔서 감사합니다.
+Thanks for contributing to vmux.
 
-## 개발 환경 설정
+## Development Setup
 
 ```bash
-# 저장소 클론
+# Clone the repository
 git clone https://github.com/roboco-io/tools.git
 cd tools/vmux
 
-# 의존성 설치
+# Install dependencies
 npm install
 
-# 빌드
+# Build
 npm run build
 
-# 개발 모드 (파일 변경 감지 + 자동 재빌드)
+# Development mode (watch files and rebuild automatically)
 npm run watch
 ```
 
-VS Code에서 `F5`를 눌러 Extension Development Host를 실행할 수 있습니다.
+In VS Code, press `F5` to launch an Extension Development Host.
 
-## 프로젝트 구조
+## Project Structure
 
-```
+```text
 src/
-├── extension/   # VS Code 확장 호스트 코드 (IPC 서버, 알림, 세션, 터미널 관리)
-├── cli/         # vmux CLI (에이전트가 확장과 통신하는 도구)
-├── mcp/         # MCP 서버 (선택적 통합)
-├── shared/      # 공유 타입, 프로토콜 정의, 유틸리티
-└── test/        # 단위 테스트 및 E2E 테스트
+├── extension/   # VS Code extension host code (IPC server, notifications, sessions, terminal management)
+├── cli/         # vmux CLI used by agents and external tools
+├── mcp/         # MCP server integration
+├── shared/      # Shared types, protocol definitions, and utilities
+└── test/        # Unit tests and E2E tests
 ```
 
-## 코드 스타일
+## Code Style
 
-- **TypeScript strict 모드** 사용 (`tsconfig.json`의 `strict: true`)
-- **esbuild**로 번들링 — CommonJS 출력
-- 린트/포맷 설정이 있다면 커밋 전 `npm run lint`를 실행해 주세요
+- Use **TypeScript strict mode** (`strict: true` in `tsconfig.json`)
+- Bundle with **esbuild** and emit CommonJS output
+- If lint or format settings are present, run `npm run lint` before submitting changes
 
-## 테스트
+## Testing
 
 ```bash
-# 단위 테스트
+# Unit and integration tests
 npm test
 
-# E2E 테스트 (VS Code Extension Test Runner)
+# E2E tests (VS Code Extension Test Runner)
 npm run test:e2e
 ```
 
-PR을 보내기 전에 반드시 테스트가 통과하는지 확인해 주세요.
+Make sure the test suite passes before opening a pull request.
 
-## PR 프로세스
+## Pull Request Process
 
-1. 저장소를 **Fork** 합니다.
-2. 기능 또는 수정 사항에 맞는 **브랜치**를 생성합니다. (`feat/알림-개선`, `fix/소켓-연결-오류` 등)
-3. 변경 사항을 커밋하고 Fork한 저장소에 push 합니다.
-4. 원본 저장소에 **Pull Request**를 생성합니다.
+1. **Fork** the repository.
+2. Create a **branch** that matches the feature or fix (`feat/notification-improvements`, `fix/socket-timeout`, etc.).
+3. Commit your changes and push them to your fork.
+4. Open a **Pull Request** against the upstream repository.
 
-## 커밋 메시지 규칙
+## Commit Message Convention
 
-[Conventional Commits](https://www.conventionalcommits.org/) 스타일을 따릅니다.
+Follow the [Conventional Commits](https://www.conventionalcommits.org/) format.
 
-```
+```text
 <type>(<scope>): <description>
 
 [optional body]
 ```
 
-**타입 예시:**
+**Common types:**
 
-| 타입 | 설명 |
-|------|------|
-| `feat` | 새로운 기능 |
-| `fix` | 버그 수정 |
-| `docs` | 문서 변경 |
-| `refactor` | 리팩토링 (기능 변화 없음) |
-| `test` | 테스트 추가/수정 |
-| `chore` | 빌드, 설정 등 기타 작업 |
+| Type | Description |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation change |
+| `refactor` | Refactoring with no behavior change |
+| `test` | Test addition or update |
+| `chore` | Build, configuration, or other maintenance work |
 
-**예시:**
+**Examples:**
 
-```
-feat(notification): 알림 배지 클릭 시 사이드바 포커스
-fix(ipc): Unix 소켓 연결 타임아웃 처리
-docs: CONTRIBUTING.md 추가
+```text
+feat(notification): focus the sidebar when the badge is clicked
+fix(ipc): handle Unix socket connection timeouts
+docs: add CONTRIBUTING.md
 ```

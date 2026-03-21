@@ -2,6 +2,9 @@ import * as vscode from 'vscode';
 import * as assert from 'node:assert/strict';
 import * as net from 'node:net';
 import * as http from 'node:http';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 const EXTENSION_ID = 'roboco-io.vmux';
 
@@ -24,9 +27,6 @@ function getSocketAddress(): string {
   const addr = process.env['VMUX_SOCKET'];
   if (addr) return addr;
   // Fallback: discover from /tmp
-  const fs = require('node:fs');
-  const os = require('node:os');
-  const path = require('node:path');
   const tmpDir = process.env['XDG_RUNTIME_DIR'] ?? os.tmpdir();
   const files = fs.readdirSync(tmpDir)
     .filter((f: string) => f.startsWith('vmux-') && f.endsWith('.sock'))

@@ -1,72 +1,77 @@
 ## ADDED Requirements
 
-### Requirement: 세션 프리셋 저장
-현재 열린 터미널 상태를 named 프리셋으로 저장할 수 있어야 한다(SHALL).
+### Requirement: Save session presets
 
-#### Scenario: 세션 저장
-- **WHEN** `session.save` 요청이 `name` 파라미터와 함께 수신되면
-- **THEN** 현재 열린 모든 터미널의 이름, CWD, 환경 변수, 셸 경로를 캡처해야 한다
-- **THEN** `.vscode/vmux-sessions.json` 파일에 해당 이름으로 프리셋을 저장해야 한다
+The system SHALL be able to save the current set of open terminals as a named preset.
 
-#### Scenario: 동일 이름 세션 덮어쓰기
-- **WHEN** 이미 존재하는 세션 이름으로 저장 요청이 수신되면
-- **THEN** 기존 프리셋을 새 상태로 덮어써야 한다
+#### Scenario: Save a session
+- **WHEN** a `session.save` request is received with a `name` parameter
+- **THEN** the system SHALL capture the name, CWD, environment variables, and shell path of all currently open terminals
+- **THEN** it SHALL save the preset to `.vscode/vmux-sessions.json` under that name
 
-#### Scenario: Command Palette에서 세션 저장
-- **WHEN** 사용자가 Command Palette에서 `vmux: Save Session`을 실행할 때
-- **THEN** 세션 이름 입력 프롬프트가 표시되어야 한다
-- **THEN** 이름 입력 후 현재 터미널 상태가 저장되어야 한다
+#### Scenario: Overwrite a session with the same name
+- **WHEN** a save request is received for a session name that already exists
+- **THEN** the existing preset SHALL be overwritten with the new state
 
-### Requirement: 세션 프리셋 복원
-저장된 프리셋으로 터미널을 복원할 수 있어야 한다(SHALL).
+#### Scenario: Save a session from the Command Palette
+- **WHEN** the user runs `vmux: Save Session` from the Command Palette
+- **THEN** a prompt for the session name SHALL be shown
+- **THEN** the current terminal state SHALL be saved after the user provides a name
 
-#### Scenario: 세션 복원
-- **WHEN** `session.restore` 요청이 `name` 파라미터와 함께 수신되면
-- **THEN** 해당 프리셋에 정의된 각 터미널이 이름, CWD, 환경 변수, 셸 경로와 함께 생성되어야 한다
+### Requirement: Restore session presets
 
-#### Scenario: split 터미널 그룹 복원
-- **WHEN** 프리셋에 동일한 `group` 번호를 가진 터미널이 여러 개 있을 때
-- **THEN** 해당 터미널들이 split 그룹으로 생성되어야 한다
+The system SHALL be able to restore terminals from a saved preset.
 
-#### Scenario: 존재하지 않는 세션 복원
-- **WHEN** 저장되지 않은 세션 이름으로 복원 요청이 수신되면
-- **THEN** "세션을 찾을 수 없습니다" 에러를 반환해야 한다
+#### Scenario: Restore a session
+- **WHEN** a `session.restore` request is received with a `name` parameter
+- **THEN** each terminal defined in the preset SHALL be created with its name, CWD, environment variables, and shell path
 
-#### Scenario: Command Palette에서 세션 복원
-- **WHEN** 사용자가 Command Palette에서 `vmux: Restore Session`을 실행할 때
-- **THEN** 저장된 세션 목록이 QuickPick으로 표시되어야 한다
-- **THEN** 선택한 세션이 복원되어야 한다
+#### Scenario: Restore split terminal groups
+- **WHEN** the preset contains multiple terminals with the same `group` number
+- **THEN** those terminals SHALL be restored as a split group
 
-### Requirement: 세션 목록 조회
-저장된 세션 프리셋 목록을 조회할 수 있어야 한다(SHALL).
+#### Scenario: Restore a session that does not exist
+- **WHEN** a restore request is received for a session name that has not been saved
+- **THEN** a `"Session not found"` error SHALL be returned
 
-#### Scenario: 세션 목록 반환
-- **WHEN** `session.list` 요청이 수신되면
-- **THEN** 모든 저장된 세션 프리셋의 이름과 터미널 수를 반환해야 한다
+#### Scenario: Restore a session from the Command Palette
+- **WHEN** the user runs `vmux: Restore Session` from the Command Palette
+- **THEN** the saved session list SHALL be shown in a QuickPick
+- **THEN** the selected session SHALL be restored
+
+### Requirement: List session presets
+
+The system SHALL be able to list saved session presets.
+
+#### Scenario: Return the session list
+- **WHEN** a `session.list` request is received
+- **THEN** the response SHALL include the names of all saved session presets and their terminal counts
 
 ### Requirement: Sessions TreeView
-저장된 세션을 사이드바 TreeView로 표시해야 한다(SHALL).
 
-#### Scenario: 세션 목록 표시
-- **WHEN** Sessions TreeView가 열려 있을 때
-- **THEN** 저장된 모든 세션 프리셋이 표시되어야 한다
-- **THEN** 각 세션 하위에 터미널 이름과 CWD가 표시되어야 한다
+The sidebar SHALL display saved sessions in a TreeView.
 
-#### Scenario: TreeView에서 세션 복원
-- **WHEN** 사용자가 TreeView에서 세션 항목의 "복원" 버튼을 클릭할 때
-- **THEN** 해당 세션이 복원되어야 한다
+#### Scenario: Show the session list
+- **WHEN** the Sessions TreeView is open
+- **THEN** all saved session presets SHALL be displayed
+- **THEN** each session SHALL display its terminal names and CWD values underneath
 
-#### Scenario: TreeView에서 세션 삭제
-- **WHEN** 사용자가 TreeView에서 세션 항목의 "삭제" 버튼을 클릭할 때
-- **THEN** 해당 세션 프리셋이 `.vscode/vmux-sessions.json`에서 제거되어야 한다
+#### Scenario: Restore from the TreeView
+- **WHEN** the user clicks the restore button on a session item in the TreeView
+- **THEN** that session SHALL be restored
 
-### Requirement: 자동 복원
-워크스페이스 열릴 때 마지막 터미널 상태를 자동 복원할 수 있어야 한다(SHALL).
+#### Scenario: Delete from the TreeView
+- **WHEN** the user clicks the delete button on a session item in the TreeView
+- **THEN** that session preset SHALL be removed from `.vscode/vmux-sessions.json`
 
-#### Scenario: 자동 복원 활성화
-- **WHEN** 설정 `vmux.autoRestore`가 `true`이고 워크스페이스가 열릴 때
-- **THEN** 마지막으로 저장된 터미널 상태가 자동으로 복원되어야 한다
+### Requirement: Auto-restore
 
-#### Scenario: 자동 복원 비활성화
-- **WHEN** 설정 `vmux.autoRestore`가 `false`일 때
-- **THEN** 자동 복원이 실행되지 않아야 한다(MUST NOT)
+The system SHALL be able to restore the last terminal state automatically when the workspace opens.
+
+#### Scenario: Auto-restore enabled
+- **WHEN** `vmux.autoRestore` is `true` and the workspace is opened
+- **THEN** the last saved terminal state SHALL be restored automatically
+
+#### Scenario: Auto-restore disabled
+- **WHEN** `vmux.autoRestore` is `false`
+- **THEN** auto-restore MUST NOT run

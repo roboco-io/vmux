@@ -1,97 +1,103 @@
 # vmux MCP Demo Scenario
 
-이 문서는 Claude Code가 vmux MCP 도구를 사용해 실행할 수 있는 데모 시나리오입니다.
+This document contains demo scenarios that Claude Code can execute by using the vmux MCP tools.
 
-> **사전 조건**: vmux 확장이 VS Code에 설치/활성화되어 있고, `.mcp.json`에 vmux MCP 서버가 설정되어 `VMUX_SOCKET`이 연결된 상태여야 합니다.
+> **Prerequisite**: the vmux extension must be installed and active in VS Code, the vmux MCP server must be configured in `.mcp.json`, and `VMUX_SOCKET` must be connected.
 
 ---
 
-## Scenario 1: 에이전트 작업 시뮬레이션
+## Scenario 1: Simulated Agent Workflow
 
-AI 에이전트가 코드 분석 → 빌드 → 테스트 → 배포하는 전체 워크플로우를 시뮬레이션합니다.
+Simulate a full AI agent workflow: code analysis → build → test → deploy.
 
-### 단계
+### Steps
 
-1. **알림**: `create_notification(title="Agent", body="작업을 시작합니다", level="info")`
-2. **터미널 생성**: `create_terminal(name="agent-worker", cwd="/tmp")`
-3. **상태 설정**: `set_status(terminalId="agent-worker", key="state", value="running", icon="play")`
-4. **진행률 0%**: `set_progress(terminalId="agent-worker", value=0, label="코드 분석 중...")`
-5. **명령 실행**: `send_command(name="agent-worker", text="echo 'Analyzing 42 files...'")`
-6. **진행률 25%**: `set_progress(terminalId="agent-worker", value=0.25, label="빌드 중...")`
-7. **명령 실행**: `send_command(name="agent-worker", text="echo 'Build successful'")`
-8. **진행률 50%**: `set_progress(terminalId="agent-worker", value=0.5, label="테스트 실행 중...")`
-9. **명령 실행**: `send_command(name="agent-worker", text="echo '24/24 tests passed'")`
-10. **진행률 75%**: `set_progress(terminalId="agent-worker", value=0.75, label="배포 중...")`
-11. **명령 실행**: `send_command(name="agent-worker", text="echo 'Deployed to staging'")`
-12. **진행률 100%**: `set_progress(terminalId="agent-worker", value=1, label="완료!")`
-13. **상태 완료**: `set_status(terminalId="agent-worker", key="state", value="done", icon="check")`
-14. **완료 알림**: `create_notification(title="Agent", body="모든 작업이 완료되었습니다", level="info")`
+1. **Notification**: `create_notification(title="Agent", body="Starting work", level="info")`
+2. **Create terminal**: `create_terminal(name="agent-worker", cwd="/tmp")`
+3. **Set status**: `set_status(terminalId="agent-worker", key="state", value="running", icon="play")`
+4. **Progress 0%**: `set_progress(terminalId="agent-worker", value=0, label="Analyzing code...")`
+5. **Run command**: `send_command(name="agent-worker", text="echo 'Analyzing 42 files...'")`
+6. **Progress 25%**: `set_progress(terminalId="agent-worker", value=0.25, label="Building...")`
+7. **Run command**: `send_command(name="agent-worker", text="echo 'Build successful'")`
+8. **Progress 50%**: `set_progress(terminalId="agent-worker", value=0.5, label="Running tests...")`
+9. **Run command**: `send_command(name="agent-worker", text="echo '24/24 tests passed'")`
+10. **Progress 75%**: `set_progress(terminalId="agent-worker", value=0.75, label="Deploying...")`
+11. **Run command**: `send_command(name="agent-worker", text="echo 'Deployed to staging'")`
+12. **Progress 100%**: `set_progress(terminalId="agent-worker", value=1, label="Done")`
+13. **Complete status**: `set_status(terminalId="agent-worker", key="state", value="done", icon="check")`
+14. **Completion notification**: `create_notification(title="Agent", body="All tasks are complete", level="info")`
 
-### 확인 포인트
-- Metadata TreeView: progress bar가 0% → 25% → 50% → 75% → 100%로 변화
-- 100%에서 스피너 아이콘이 체크마크로 변경
-- StatusBar에 알림 배지 표시
-- 터미널에 echo 출력 표시
+### Verification Points
 
-### 정리
+- The Metadata TreeView updates the progress bar from 0% → 25% → 50% → 75% → 100%
+- The spinner icon changes to a checkmark at 100%
+- A notification badge appears in the Status Bar
+- The terminal shows the `echo` output
+
+### Cleanup
+
 - `close_terminal(name="agent-worker")`
 - `clear_notifications()`
 
 ---
 
-## Scenario 2: 에러 핸들링
+## Scenario 2: Error Handling
 
-빌드 실패 시 에이전트가 에러를 보고하는 시나리오입니다.
+Simulate an agent reporting a build failure.
 
-### 단계
+### Steps
 
-1. **터미널 생성**: `create_terminal(name="build-agent")`
-2. **상태 설정**: `set_status(terminalId="build-agent", key="build", value="running", icon="loading~spin")`
-3. **진행률 30%**: `set_progress(terminalId="build-agent", value=0.3, label="컴파일 중...")`
-4. **명령 실행**: `send_command(name="build-agent", text="echo 'ERROR: Cannot find module ./missing'")`
-5. **상태 실패**: `set_status(terminalId="build-agent", key="build", value="FAILED", icon="error")`
-6. **에러 알림**: `create_notification(title="Build Failed", body="Cannot find module ./missing", level="error")`
-7. **경고 알림**: `create_notification(title="CI Pipeline", body="빌드 실패로 배포가 중단되었습니다", level="warning")`
+1. **Create terminal**: `create_terminal(name="build-agent")`
+2. **Set status**: `set_status(terminalId="build-agent", key="build", value="running", icon="loading~spin")`
+3. **Progress 30%**: `set_progress(terminalId="build-agent", value=0.3, label="Compiling...")`
+4. **Run command**: `send_command(name="build-agent", text="echo 'ERROR: Cannot find module ./missing'")`
+5. **Fail status**: `set_status(terminalId="build-agent", key="build", value="FAILED", icon="error")`
+6. **Error notification**: `create_notification(title="Build Failed", body="Cannot find module ./missing", level="error")`
+7. **Warning notification**: `create_notification(title="CI Pipeline", body="Deployment stopped because the build failed", level="warning")`
 
-### 확인 포인트
-- Metadata TreeView: build 상태가 error 아이콘으로 표시
-- VS Code 팝업에 에러 메시지 표시
-- Notifications TreeView에 error/warning 알림 표시
+### Verification Points
 
-### 정리
+- The Metadata TreeView shows the build state with an error icon
+- A VS Code popup displays the error message
+- The Notifications TreeView shows both error and warning notifications
+
+### Cleanup
+
 - `close_terminal(name="build-agent")`
 - `clear_notifications()`
 
 ---
 
-## Scenario 3: 다중 터미널 관리
+## Scenario 3: Multi-Terminal Management
 
-여러 터미널을 생성하고 세션으로 저장/복원하는 시나리오입니다.
+Create multiple terminals and save or restore them as a session.
 
-### 단계
+### Steps
 
-1. **터미널 3개 생성**:
+1. **Create three terminals**:
    - `create_terminal(name="frontend", cwd="/tmp")`
    - `create_terminal(name="backend", cwd="/tmp")`
    - `create_terminal(name="database", cwd="/tmp")`
-2. **각 터미널에 명령 전송**:
+2. **Send commands to each terminal**:
    - `send_command(name="frontend", text="echo 'React dev server started on :3000'")`
    - `send_command(name="backend", text="echo 'API server started on :8080'")`
    - `send_command(name="database", text="echo 'PostgreSQL connected on :5432'")`
-3. **각 터미널 상태 설정**:
+3. **Set terminal status values**:
    - `set_status(terminalId="frontend", key="port", value=":3000", icon="globe")`
    - `set_status(terminalId="backend", key="port", value=":8080", icon="server")`
    - `set_status(terminalId="database", key="port", value=":5432", icon="database")`
-4. **터미널 목록 확인**: `list_terminals()`
-5. **포커스 이동**: `focus_terminal(name="backend")`
-6. **알림**: `create_notification(title="Dev Environment", body="3개 서비스 실행 중", level="info")`
+4. **List terminals**: `list_terminals()`
+5. **Move focus**: `focus_terminal(name="backend")`
+6. **Notification**: `create_notification(title="Dev Environment", body="3 services are running", level="info")`
 
-### 확인 포인트
-- Terminals TreeView에 3개 터미널 표시
-- Metadata TreeView에 각 터미널의 상태 pill 표시
-- 포커스 이동 시 해당 터미널 활성화
+### Verification Points
 
-### 정리
+- The Terminals TreeView shows three terminals
+- The Metadata TreeView shows a status pill for each terminal
+- Focus changes to the selected terminal
+
+### Cleanup
+
 - `close_terminal(name="frontend")`
 - `close_terminal(name="backend")`
 - `close_terminal(name="database")`
@@ -99,24 +105,26 @@ AI 에이전트가 코드 분석 → 빌드 → 테스트 → 배포하는 전�
 
 ---
 
-## Scenario 4: 알림 우선순위
+## Scenario 4: Notification Priority
 
-다양한 레벨의 알림을 보내 TreeView 표시를 확인합니다.
+Send notifications at different levels and verify how they appear in the TreeView.
 
-### 단계
+### Steps
 
-1. `create_notification(title="Info", body="일반 정보 메시지", level="info")`
-2. `create_notification(title="Warning", body="디스크 사용량 85%", level="warning")`
-3. `create_notification(title="Error", body="데이터베이스 연결 실패", level="error")`
-4. `create_notification(title="Info", body="백업 완료", level="info")`
-5. `create_notification(title="Error", body="메모리 부족", level="error")`
-6. **목록 확인**: `list_notifications()`
+1. `create_notification(title="Info", body="General information message", level="info")`
+2. `create_notification(title="Warning", body="Disk usage at 85%", level="warning")`
+3. `create_notification(title="Error", body="Database connection failed", level="error")`
+4. `create_notification(title="Info", body="Backup complete", level="info")`
+5. `create_notification(title="Error", body="Out of memory", level="error")`
+6. **List notifications**: `list_notifications()`
 
-### 확인 포인트
-- Notifications TreeView에 5개 알림 (최신순)
-- 각 알림에 level별 아이콘 (info/warning/error)
-- StatusBar 배지: 🔔 5
-- `Cmd+Shift+U`로 최신 알림 점프
+### Verification Points
 
-### 정리
+- The Notifications TreeView shows five notifications in reverse chronological order
+- Each notification has the correct icon for its level (`info` / `warning` / `error`)
+- The Status Bar badge shows `5`
+- `Cmd+Shift+U` jumps to the latest notification
+
+### Cleanup
+
 - `clear_notifications()`

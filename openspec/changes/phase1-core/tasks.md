@@ -1,94 +1,94 @@
 ## 1. Project Scaffolding
 
-- [x] 1.1 `npm init`으로 package.json 생성, TypeScript/esbuild/eslint/prettier 의존성 추가
-- [x] 1.2 tsconfig.json 설정 (strict mode, Node.js + VS Code 타입)
-- [x] 1.3 esbuild 빌드 스크립트 구성 (extension + CLI 이중 번들, watch 모드)
-- [x] 1.4 VS Code extension manifest 작성 (contributes: viewsContainers, views, commands, keybindings, configuration)
-- [x] 1.5 디렉토리 구조 생성: `src/extension/`, `src/cli/`, `src/shared/`, `src/test/`
-- [x] 1.6 .vscodeignore, .gitignore 설정
-- [x] 1.7 Extension entry point (`extension.ts`) 스켈레톤: activate/deactivate
+- [x] 1.1 Create `package.json` with `npm init` and add TypeScript, esbuild, eslint, and prettier dependencies
+- [x] 1.2 Configure `tsconfig.json` (strict mode, Node.js + VS Code types)
+- [x] 1.3 Configure esbuild scripts (extension + CLI dual bundle, watch mode)
+- [x] 1.4 Write the VS Code extension manifest (`contributes`: viewsContainers, views, commands, keybindings, configuration)
+- [x] 1.5 Create the directory structure: `src/extension/`, `src/cli/`, `src/shared/`, `src/test/`
+- [x] 1.6 Configure `.vscodeignore` and `.gitignore`
+- [x] 1.7 Add the extension entry point (`extension.ts`) skeleton: `activate` / `deactivate`
 
 ## 2. Shared Protocol & Types
 
-- [x] 2.1 `src/shared/types.ts` 작성: Notification, SessionPreset, TerminalInfo 인터페이스
-- [x] 2.2 `src/shared/protocol.ts` 작성: JSON-RPC 2.0 요청/응답 타입, 메서드별 파라미터/결과 타입
-- [x] 2.3 JSON-RPC 유틸리티 함수: createRequest, createResponse, createError, parseMessage
+- [x] 2.1 Write `src/shared/types.ts`: `Notification`, `SessionPreset`, and `TerminalInfo` interfaces
+- [x] 2.2 Write `src/shared/protocol.ts`: JSON-RPC 2.0 request and response types plus per-method parameter and result types
+- [x] 2.3 Add JSON-RPC utility functions: `createRequest`, `createResponse`, `createError`, `parseMessage`
 
 ## 3. IPC Server
 
-- [x] 3.1 `src/extension/ipc/server.ts`: IpcServer 추상 인터페이스 (start, stop, onRequest)
-- [x] 3.2 `src/extension/ipc/unix-socket-server.ts`: Node.js `net` 기반 Unix socket 서버 구현
-- [x] 3.3 `src/extension/ipc/http-server.ts`: Node.js `http` 기반 HTTP 서버 구현
-- [x] 3.4 소켓 경로 생성 로직: workspaceHash(SHA-256 앞 8자) + XDG_RUNTIME_DIR fallback
-- [x] 3.5 stale 소켓 파일 감지 및 정리 로직
-- [x] 3.6 JSON-RPC 메서드 라우터: 메서드명 → 핸들러 매핑, 에러 코드(-32601, -32700, -32602) 처리
-- [x] 3.7 플랫폼별 자동 선택: macOS/Linux → Unix socket, Windows → HTTP
-- [x] 3.8 extension.ts에서 IPC 서버 시작/종료 연결 (activate/deactivate)
-- [x] 3.9 IPC 서버 단위 테스트: 요청 파싱, 에러 응답, 소켓 생성/정리
+- [x] 3.1 `src/extension/ipc/server.ts`: abstract `IpcServer` interface (`start`, `stop`, `onRequest`)
+- [x] 3.2 `src/extension/ipc/unix-socket-server.ts`: implement a Unix socket server with Node.js `net`
+- [x] 3.3 `src/extension/ipc/http-server.ts`: implement an HTTP server with Node.js `http`
+- [x] 3.4 Implement socket path generation: `workspaceHash` (first 8 chars of SHA-256) + `XDG_RUNTIME_DIR` fallback
+- [x] 3.5 Implement stale socket file detection and cleanup
+- [x] 3.6 Implement a JSON-RPC method router: map method names to handlers and handle error codes (`-32601`, `-32700`, `-32602`)
+- [x] 3.7 Auto-select by platform: macOS/Linux → Unix socket, Windows → HTTP
+- [x] 3.8 Wire IPC server startup and shutdown into `extension.ts` (`activate` / `deactivate`)
+- [x] 3.9 Add IPC server unit tests: request parsing, error responses, socket creation and cleanup
 
 ## 4. CLI Tool
 
-- [x] 4.1 `src/cli/index.ts`: argv 파서 (내장 `process.argv` 기반, 외부 의존성 없음)
-- [x] 4.2 소켓 탐지 로직: VMUX_SOCKET → --socket 옵션 → /tmp glob 순서
-- [x] 4.3 JSON-RPC 클라이언트: Unix socket(`net`) + HTTP(`http`) 요청 전송
-- [x] 4.4 notify 명령: --title, --body, --level 파싱 → notification.create 요청
-- [x] 4.5 list-notifications / clear-notifications 명령 구현
-- [x] 4.6 create-terminal / list-terminals / send / focus / close 명령 구현
-- [x] 4.7 save-session / restore-session / list-sessions 명령 구현
-- [x] 4.8 --json 플래그: JSON 출력 포맷, --help 플래그: 사용법 출력
-- [x] 4.9 에러 처리: 소켓 연결 실패, 타임아웃, JSON-RPC 에러 → 사용자 친화적 메시지
-- [x] 4.10 esbuild로 단일 파일 번들 + shebang 삽입 확인
-- [x] 4.11 CLI 통합 테스트: 실제 소켓 연결 → 요청/응답 검증
+- [x] 4.1 `src/cli/index.ts`: argument parser based on built-in `process.argv` only
+- [x] 4.2 Implement socket discovery order: `VMUX_SOCKET` → `--socket` option → `/tmp` glob
+- [x] 4.3 Implement a JSON-RPC client over Unix socket (`net`) + HTTP (`http`)
+- [x] 4.4 Implement the `notify` command: parse `--title`, `--body`, `--level` and send `notification.create`
+- [x] 4.5 Implement `list-notifications` and `clear-notifications`
+- [x] 4.6 Implement `create-terminal`, `list-terminals`, `send`, `focus`, and `close`
+- [x] 4.7 Implement `save-session`, `restore-session`, and `list-sessions`
+- [x] 4.8 Implement `--json` output formatting and `--help`
+- [x] 4.9 Add error handling for socket connection failures, timeouts, and JSON-RPC errors with user-friendly messages
+- [x] 4.10 Verify single-file bundling with esbuild and shebang insertion
+- [x] 4.11 Add CLI integration tests against a real socket connection
 
 ## 5. Agent Notifications
 
-- [x] 5.1 `src/extension/notifications/manager.ts`: NotificationManager (생성, 조회, 삭제, 읽음 처리)
-- [x] 5.2 Notification 인메모리 저장소: Map<id, Notification>, timestamp 역순 정렬
-- [x] 5.3 IPC 메서드 핸들러 등록: notification.create, notification.list, notification.clear
-- [x] 5.4 `src/extension/views/notifications-tree.ts`: NotificationsTreeDataProvider 구현
-- [x] 5.5 TreeView 항목: level별 아이콘(info/warning/error), title, timestamp, read 상태 스타일
-- [x] 5.6 알림 클릭 → 터미널 포커스 이동 + read 상태 변경
-- [x] 5.7 StatusBarItem: 미읽은 알림 수 배지, bell 아이콘, 클릭 시 TreeView 포커스
-- [x] 5.8 `vmux.jumpToNotification` 커맨드: 최신 미읽은 알림 → 터미널 포커스
-- [x] 5.9 keybinding 등록: Cmd+Shift+U (macOS) / Ctrl+Shift+U (Windows/Linux)
-- [x] 5.10 시스템 알림: vmux.systemNotifications 설정에 따라 showInformationMessage/Warning/Error 호출
-- [x] 5.11 알림 시스템 단위 테스트: 생성/조회/삭제/읽음 처리, StatusBar 업데이트
+- [x] 5.1 `src/extension/notifications/manager.ts`: `NotificationManager` (create, list, delete, mark read)
+- [x] 5.2 In-memory notification store: `Map<id, Notification>` sorted by reverse timestamp
+- [x] 5.3 Register IPC handlers: `notification.create`, `notification.list`, `notification.clear`
+- [x] 5.4 `src/extension/views/notifications-tree.ts`: implement `NotificationsTreeDataProvider`
+- [x] 5.5 TreeView items: level icons (`info` / `warning` / `error`), title, timestamp, read-state styling
+- [x] 5.6 Clicking a notification focuses the terminal and marks it as read
+- [x] 5.7 `StatusBarItem`: unread notification badge, bell icon, click to focus the TreeView
+- [x] 5.8 `vmux.jumpToNotification` command: focus the latest unread notification terminal
+- [x] 5.9 Register keybindings: `Cmd+Shift+U` (macOS) / `Ctrl+Shift+U` (Windows/Linux)
+- [x] 5.10 System notifications: call `showInformationMessage` / `showWarningMessage` / `showErrorMessage` based on `vmux.systemNotifications`
+- [x] 5.11 Add notification system unit tests: create, list, delete, mark read, StatusBar updates
 
 ## 6. Terminal Sessions
 
-- [x] 6.1 `src/extension/sessions/manager.ts`: SessionManager (저장, 복원, 목록, 삭제)
-- [x] 6.2 세션 프리셋 파일 I/O: `.vscode/vmux-sessions.json` 읽기/쓰기
-- [x] 6.3 현재 터미널 상태 캡처: 이름, CWD(가능한 경우), 셸 경로 수집
-- [x] 6.4 세션 복원: createTerminal 순차 호출, group 번호에 따른 split 터미널 생성
-- [x] 6.5 IPC 메서드 핸들러 등록: session.save, session.restore, session.list
-- [x] 6.6 `src/extension/views/sessions-tree.ts`: SessionsTreeDataProvider 구현
-- [x] 6.7 TreeView 항목: 세션 이름, 하위에 터미널 목록, 복원/삭제 인라인 버튼
-- [x] 6.8 Command Palette 커맨드: vmux.saveSession (이름 입력 프롬프트), vmux.restoreSession (QuickPick)
-- [x] 6.9 자동 복원: vmux.autoRestore 설정 → activate 시 마지막 상태 복원
-- [x] 6.10 세션 관리 단위 테스트: 저장/복원/목록/삭제, 파일 I/O
+- [x] 6.1 `src/extension/sessions/manager.ts`: `SessionManager` (save, restore, list, delete)
+- [x] 6.2 Implement session preset file I/O for `.vscode/vmux-sessions.json`
+- [x] 6.3 Capture current terminal state: name, CWD when available, shell path
+- [x] 6.4 Restore sessions with sequential `createTerminal` calls and split groups based on group number
+- [x] 6.5 Register IPC handlers: `session.save`, `session.restore`, `session.list`
+- [x] 6.6 `src/extension/views/sessions-tree.ts`: implement `SessionsTreeDataProvider`
+- [x] 6.7 TreeView items: session names, nested terminal list, inline restore and delete buttons
+- [x] 6.8 Command Palette commands: `vmux.saveSession` (name input prompt), `vmux.restoreSession` (QuickPick)
+- [x] 6.9 Auto-restore the last saved state when `vmux.autoRestore` is enabled
+- [x] 6.10 Add session management unit tests: save, restore, list, delete, file I/O
 
 ## 7. Environment Context & Terminal Management
 
-- [x] 7.1 `src/extension/terminals/manager.ts`: TerminalManager (생성, 목록, 포커스, 종료, 전송)
-- [x] 7.2 환경 변수 빌더: vmux.envPrefix 설정 반영, VMUX_* 변수 생성
-- [x] 7.3 TerminalProfileProvider 등록: "vmux" 프로파일, 기본 셸 + env 주입
-- [x] 7.4 IPC 메서드 핸들러 등록: terminal.create, terminal.list, terminal.focus, terminal.close, terminal.send
-- [x] 7.5 `src/extension/views/terminals-tree.ts`: TerminalsTreeDataProvider 구현
-- [x] 7.6 TreeView 항목: 터미널 이름, CWD, 활성/종료 상태, 클릭 시 포커스
-- [x] 7.7 터미널 라이프사이클 추적: onDidOpenTerminal, onDidCloseTerminal 이벤트 핸들링
-- [x] 7.8 터미널 관리 단위 테스트: 생성/목록/포커스/종료, env 주입 검증
+- [x] 7.1 `src/extension/terminals/manager.ts`: `TerminalManager` (create, list, focus, close, send)
+- [x] 7.2 Environment variable builder: honor `vmux.envPrefix` and generate `VMUX_*` variables
+- [x] 7.3 Register a `TerminalProfileProvider`: `"vmux"` profile using the default shell + env injection
+- [x] 7.4 Register IPC handlers: `terminal.create`, `terminal.list`, `terminal.focus`, `terminal.close`, `terminal.send`
+- [x] 7.5 `src/extension/views/terminals-tree.ts`: implement `TerminalsTreeDataProvider`
+- [x] 7.6 TreeView items: terminal name, CWD, active/closed state, click to focus
+- [x] 7.7 Track terminal lifecycle with `onDidOpenTerminal` and `onDidCloseTerminal`
+- [x] 7.8 Add terminal management unit tests: create, list, focus, close, env injection verification
 
 ## 8. Integration & E2E Testing
 
-- [x] 8.1 @vscode/test-electron 설정: Extension Host 테스트 환경 구성
-- [x] 8.2 E2E 시나리오: CLI notify → TreeView 확인 → 터미널 포커스
-- [x] 8.3 E2E 시나리오: 세션 저장 → 복원 → 터미널 상태 검증
-- [x] 8.4 E2E 시나리오: 환경 변수 주입 확인 (터미널 생성 → env 검증)
-- [x] 8.5 크로스 플랫폼 확인: Unix socket + HTTP fallback 동작 검증
+- [x] 8.1 Configure `@vscode/test-electron` for Extension Host tests
+- [x] 8.2 E2E scenario: CLI notify → TreeView verification → terminal focus
+- [x] 8.3 E2E scenario: save session → restore session → verify terminal state
+- [x] 8.4 E2E scenario: verify environment variable injection (create terminal → inspect env)
+- [x] 8.5 Cross-platform verification: Unix socket + HTTP fallback
 
 ## 9. Documentation & Polish
 
-- [x] 9.1 에이전트 hook 예제 작성: Claude Code, Codex, Gemini CLI 설정 가이드
-- [x] 9.2 CHANGELOG.md 초기 버전 작성
-- [x] 9.3 extension 아이콘 (resources/vmux-icon.svg) 생성
-- [x] 9.4 `vsce package` 로 .vsix 패키지 빌드 확인
+- [x] 9.1 Write agent hook examples for Claude Code, Codex, and Gemini CLI
+- [x] 9.2 Write the initial `CHANGELOG.md`
+- [x] 9.3 Create the extension icon (`resources/vmux-icon.svg`)
+- [x] 9.4 Verify `.vsix` package build with `vsce package`
