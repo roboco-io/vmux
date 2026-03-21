@@ -81,10 +81,10 @@
 ## 8. Integration & E2E Testing
 
 - [x] 8.1 @vscode/test-electron 설정: Extension Host 테스트 환경 구성
-- [ ] 8.2 E2E 시나리오: CLI notify → TreeView 확인 → 터미널 포커스
-- [ ] 8.3 E2E 시나리오: 세션 저장 → 복원 → 터미널 상태 검증
-- [ ] 8.4 E2E 시나리오: 환경 변수 주입 확인 (터미널 생성 → env 검증)
-- [ ] 8.5 크로스 플랫폼 확인: Unix socket + HTTP fallback 동작 검증
+- [x] 8.2 E2E 시나리오: CLI notify → TreeView 확인 → 터미널 포커스
+- [x] 8.3 E2E 시나리오: 세션 저장 → 복원 → 터미널 상태 검증
+- [x] 8.4 E2E 시나리오: 환경 변수 주입 확인 (터미널 생성 → env 검증)
+- [x] 8.5 크로스 플랫폼 확인: Unix socket + HTTP fallback 동작 검증
 
 ## 9. Documentation & Polish
 

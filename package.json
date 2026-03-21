@@ -25,7 +25,8 @@
     "watch": "concurrently \"npm run build:ext -- --watch\" \"npm run build:cli -- --watch\"",
     "lint": "eslint src/",
     "test": "node --test dist/test/**/*.test.js",
-    "test:e2e": "vscode-test",
+    "build:e2e": "node scripts/build-e2e.js",
+    "test:e2e": "npm run build && npm run build:e2e && node dist/e2e/runTest.js",
     "package": "vsce package",
     "compile": "tsc --noEmit"
   },
