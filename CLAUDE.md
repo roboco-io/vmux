@@ -55,6 +55,10 @@ Phase 1 milestone order: scaffolding → IPC server + CLI → notifications → 
 - Existing terminal buffers cannot be read (`TerminalBuffer` remains proposed/backlogged)
 - Full cmux CLI compatibility remains undecided
 
+## README Translation
+
+When `README.md` is modified, `README.ko.md` and `README.ja.md` must also be updated with the translated changes. A pre-commit hook (`scripts/check-readme-sync.sh`) warns if translations are out of sync.
+
 ## Platform Support
 
 | Platform | IPC |
