@@ -12,14 +12,19 @@
   "engines": {
     "vscode": "^1.99.0"
   },
-  "categories": ["Other"],
-  "activationEvents": ["onStartupFinished"],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./dist/extension.js",
   "bin": {
     "vmux": "./dist/cli.js"
   },
   "scripts": {
-    "build": "npm run build:ext && npm run build:cli",
+    "build": "npm run build:ext && npm run build:cli && npm run build:mcp",
+    "build:mcp": "node scripts/build-mcp.js",
     "build:ext": "esbuild src/extension/extension.ts --bundle --outfile=dist/extension.js --platform=node --format=cjs --external:vscode --sourcemap",
     "build:cli": "node scripts/build-cli.js",
     "watch": "concurrently \"npm run build:ext -- --watch\" \"npm run build:cli -- --watch\"",
@@ -35,11 +40,11 @@
     "@types/vscode": "^1.99.0",
     "@vscode/test-electron": "^2.4.0",
     "@vscode/vsce": "^3.0.0",
+    "concurrently": "^9.0.0",
     "esbuild": "^0.24.0",
     "eslint": "^9.0.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.0.0",
-    "concurrently": "^9.0.0"
+    "typescript-eslint": "^8.0.0"
   },
   "contributes": {
     "viewsContainers": {
@@ -53,18 +58,49 @@
     },
     "views": {
       "vmux": [
-        { "id": "vmux.notifications", "name": "Notifications" },
-        { "id": "vmux.terminals", "name": "Terminals" },
-        { "id": "vmux.sessions", "name": "Sessions" },
-        { "id": "vmux.metadata", "name": "Metadata" }
+        {
+          "id": "vmux.notifications",
+          "name": "Notifications"
+        },
+        {
+          "id": "vmux.terminals",
+          "name": "Terminals"
+        },
+        {
+          "id": "vmux.sessions",
+          "name": "Sessions"
+        },
+        {
+          "id": "vmux.metadata",
+          "name": "Metadata"
+        }
       ]
     },
     "commands": [
-      { "command": "vmux.createTerminal", "title": "vmux: Create Terminal" },
-      { "command": "vmux.saveSession", "title": "vmux: Save Session" },
-      { "command": "vmux.restoreSession", "title": "vmux: Restore Session" },
-      { "command": "vmux.jumpToNotification", "title": "vmux: Jump to Latest Notification" },
-      { "command": "vmux.clearNotifications", "title": "vmux: Clear Notifications" }
+      {
+        "command": "vmux.createTerminal",
+        "title": "vmux: Create Terminal"
+      },
+      {
+        "command": "vmux.saveSession",
+        "title": "vmux: Save Session"
+      },
+      {
+        "command": "vmux.restoreSession",
+        "title": "vmux: Restore Session"
+      },
+      {
+        "command": "vmux.jumpToNotification",
+        "title": "vmux: Jump to Latest Notification"
+      },
+      {
+        "command": "vmux.clearNotifications",
+        "title": "vmux: Clear Notifications"
+      },
+      {
+        "command": "vmux.launchAgentGrid",
+        "title": "vmux: Launch Agent Grid"
+      }
     ],
     "keybindings": [
       {
@@ -78,7 +114,10 @@
       "properties": {
         "vmux.ipc.type": {
           "type": "string",
-          "enum": ["unix", "http"],
+          "enum": [
+            "unix",
+            "http"
+          ],
           "default": "unix",
           "description": "IPC transport type (unix socket or HTTP)"
         },
@@ -104,5 +143,9 @@
         }
       }
     }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^4.3.6"
   }
 }

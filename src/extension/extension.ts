@@ -14,6 +14,8 @@ import { TerminalsTreeDataProvider } from './views/terminals-tree.js';
 import { MetadataManager } from './metadata/manager.js';
 import { MetadataTreeDataProvider } from './views/metadata-tree.js';
 import { ActivityMonitor } from './terminals/activity-monitor.js';
+import { AgentGrid } from './terminals/agent-grid.js';
+import { AgentPresetManager } from './terminals/agent-presets.js';
 
 let ipcServer: IpcServer | null = null;
 
@@ -60,6 +62,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const terminalMgr = new TerminalManager(buildEnv);
   const metadataMgr = new MetadataManager();
   const activityMonitor = new ActivityMonitor();
+  const agentGrid = new AgentGrid(buildEnv);
+  const agentPresets = new AgentPresetManager();
 
   // ─── TreeViews ───────────────────────────────────────────────
   const notifTree = new NotificationsTreeDataProvider(notificationMgr);
@@ -217,6 +221,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       await sessionMgr.restore(item.name);
       vscode.window.showInformationMessage(`vmux: Session "${item.name}" restored`);
     }),
+
+    vscode.commands.registerCommand('vmux.launchAgentGrid', async () => {
+      const name = await vscode.window.showInputBox({ prompt: 'Grid name' });
+      if (!name) return;
+      const rowsStr = await vscode.window.showInputBox({ prompt: 'Rows', value: '2' });
+      const colsStr = await vscode.window.showInputBox({ prompt: 'Columns', value: '2' });
+      const rows = parseInt(rowsStr ?? '2', 10);
+      const cols = parseInt(colsStr ?? '2', 10);
+      agentGrid.create({ name, rows, cols });
+      vscode.window.showInformationMessage(`vmux: ${rows}x${cols} agent grid "${name}" created`);
+    }),
   );
 
   // ─── IPC Method Handlers ─────────────────────────────────────
@@ -321,6 +336,58 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (!terminalId || !message) throw new Error('Invalid params: terminalId and message are required');
     metadataMgr.addLog(terminalId, message, (params['level'] as 'info' | 'progress' | 'success' | 'warning' | 'error') ?? 'info');
     return { ok: true };
+  });
+
+  // ─── Agent Grid IPC Handlers ─────────────────────────────────
+  router.register('agent.grid', async (params) => {
+    const name = params['name'] as string | undefined;
+    const rows = params['rows'] as number | undefined;
+    const cols = params['cols'] as number | undefined;
+    if (!name || !rows || !cols) throw new Error('Invalid params: name, rows, cols are required');
+    agentGrid.create({
+      name, rows, cols,
+      cwd: params['cwd'] as string | undefined,
+      names: params['names'] as string[] | undefined,
+    });
+    return { ok: true, terminals: rows * cols };
+  });
+
+  router.register('agent.broadcast', async (params) => {
+    const grid = params['grid'] as string | undefined;
+    const text = params['text'] as string | undefined;
+    if (!grid || !text) throw new Error('Invalid params: grid and text are required');
+    agentGrid.broadcast(grid, text);
+    return { ok: true };
+  });
+
+  router.register('agent.grids', async () => agentGrid.listGrids());
+
+  // ─── Agent Preset IPC Handlers ──────────────────────────────
+  router.register('agent.preset.save', async (params) => {
+    const name = params['name'] as string | undefined;
+    if (!name) throw new Error('Invalid params: name is required');
+    agentPresets.save({
+      name,
+      command: params['command'] as string | undefined,
+      cwd: params['cwd'] as string | undefined,
+      shellPath: params['shellPath'] as string | undefined,
+      env: params['env'] as Record<string, string> | undefined,
+    });
+    return { ok: true };
+  });
+
+  router.register('agent.preset.list', async () => agentPresets.list());
+
+  router.register('agent.preset.launch', async (params) => {
+    const name = params['name'] as string | undefined;
+    if (!name) throw new Error('Invalid params: name is required');
+    const preset = agentPresets.get(name);
+    if (!preset) throw new Error(`Invalid params: Agent preset not found: ${name}`);
+    const info = terminalMgr.create(preset.name, preset.cwd, preset.env, preset.shellPath);
+    if (preset.command) {
+      terminalMgr.send(preset.name, preset.command);
+    }
+    return info;
   });
 
   // ─── Auto Restore ────────────────────────────────────────────

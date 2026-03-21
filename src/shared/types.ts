@@ -28,6 +28,16 @@ export interface TerminalInfo {
   isActive: boolean;
 }
 
+// Phase 3: Agent Presets
+
+export interface AgentPreset {
+  name: string;
+  command?: string;
+  cwd?: string;
+  env?: Record<string, string>;
+  shellPath?: string;
+}
+
 // Phase 2: Metadata
 
 export interface LogEntry {

@@ -279,6 +279,58 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
       break;
     }
 
+    // ── Agent Grid ──
+    case 'launch-grid': {
+      const name = parsed.flags['name'] ?? 'grid';
+      const rows = parseInt(parsed.flags['rows'] ?? '2', 10);
+      const cols = parseInt(parsed.flags['cols'] ?? '2', 10);
+      const result = await rpcCall(address, 'agent.grid', {
+        name, rows, cols, cwd: parsed.flags['cwd'],
+      });
+      printResult(result, json);
+      break;
+    }
+    case 'broadcast': {
+      const grid = parsed.flags['grid'];
+      const text = parsed.positional[0];
+      if (!grid) throw new Error('--grid is required');
+      if (!text) throw new Error('<text> argument is required');
+      const result = await rpcCall(address, 'agent.broadcast', { grid, text });
+      printResult(result, json);
+      break;
+    }
+    case 'list-grids': {
+      const result = await rpcCall(address, 'agent.grids', {});
+      printResult(result, json);
+      break;
+    }
+
+    // ── Agent Presets ──
+    case 'save-agent': {
+      const name = parsed.flags['name'];
+      if (!name) throw new Error('--name is required');
+      const result = await rpcCall(address, 'agent.preset.save', {
+        name,
+        command: parsed.flags['command'],
+        cwd: parsed.flags['cwd'],
+        shellPath: parsed.flags['shell'],
+      });
+      printResult(result, json);
+      break;
+    }
+    case 'list-agents': {
+      const result = await rpcCall(address, 'agent.preset.list', {});
+      printResult(result, json);
+      break;
+    }
+    case 'launch-agent': {
+      const name = parsed.flags['name'];
+      if (!name) throw new Error('--name is required');
+      const result = await rpcCall(address, 'agent.preset.launch', { name });
+      printResult(result, json);
+      break;
+    }
+
     case '--help':
     case 'help':
     case '':
@@ -316,6 +368,16 @@ Metadata:
   set-status <key> <value> [--icon <name>] [--color <hex>] [--terminal <id>]
   set-progress <value> [--label <text>] [--terminal <id>]
   log <message> [--level info|progress|success|warning|error] [--terminal <id>]
+
+Agent Grid:
+  launch-grid [--name <n>] [--rows <r>] [--cols <c>] [--cwd <path>]
+  broadcast --grid <name> <text>
+  list-grids [--json]
+
+Agent Presets:
+  save-agent --name <n> [--command <cmd>] [--cwd <path>] [--shell <path>]
+  list-agents [--json]
+  launch-agent --name <n>
 
 Options:
   --socket <path>   IPC socket path or HTTP URL
