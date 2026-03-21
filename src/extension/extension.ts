@@ -9,6 +9,9 @@ import { TerminalManager } from './terminals/manager.js';
 import { NotificationsTreeDataProvider } from './views/notifications-tree.js';
 import { SessionsTreeDataProvider } from './views/sessions-tree.js';
 import { TerminalsTreeDataProvider } from './views/terminals-tree.js';
+import { MetadataManager } from './metadata/manager.js';
+import { MetadataTreeDataProvider } from './views/metadata-tree.js';
+import { ActivityMonitor } from './terminals/activity-monitor.js';
 
 let ipcServer: IpcServer | null = null;
 
@@ -53,20 +56,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const notificationMgr = new NotificationManager();
   const sessionMgr = new SessionManager();
   const terminalMgr = new TerminalManager(buildEnv);
+  const metadataMgr = new MetadataManager();
+  const activityMonitor = new ActivityMonitor();
 
   // ─── TreeViews ───────────────────────────────────────────────
   const notifTree = new NotificationsTreeDataProvider(notificationMgr);
   const sessionsTree = new SessionsTreeDataProvider(sessionMgr);
   const terminalsTree = new TerminalsTreeDataProvider(terminalMgr);
+  const metadataTree = new MetadataTreeDataProvider(metadataMgr);
 
   vscode.window.registerTreeDataProvider('vmux.notifications', notifTree);
   vscode.window.registerTreeDataProvider('vmux.sessions', sessionsTree);
   vscode.window.registerTreeDataProvider('vmux.terminals', terminalsTree);
+  vscode.window.registerTreeDataProvider('vmux.metadata', metadataTree);
 
   // Wire change events → refresh TreeViews
   notificationMgr.onDidChange = () => { notifTree.refresh(); updateStatusBar(); };
   sessionMgr.onDidChange = () => sessionsTree.refresh();
   terminalMgr.onDidChange = () => terminalsTree.refresh();
+  metadataMgr.onDidChange = () => metadataTree.refresh();
+  activityMonitor.onDidChange = () => terminalsTree.refresh();
 
   // ─── StatusBar ───────────────────────────────────────────────
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -90,6 +99,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.window.onDidOpenTerminal((t) => terminalMgr.onDidOpenTerminal(t)),
     vscode.window.onDidCloseTerminal((t) => terminalMgr.onDidCloseTerminal(t)),
   );
+
+  // ─── Activity Monitor ─────────────────────────────────────────
+  activityMonitor.registerEvents(context);
 
   // ─── Global env injection (all terminals) ────────────────────
   const envCollection = context.environmentVariableCollection;
@@ -257,6 +269,38 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     return { ok: true };
   });
   router.register('session.list', async () => sessionMgr.list());
+
+  // ─── Metadata IPC Handlers ──────────────────────────────────
+  router.register('metadata.set', async (params) => {
+    const terminalId = params['terminalId'] as string | undefined;
+    const key = params['key'] as string | undefined;
+    const value = params['value'] as string | undefined;
+    if (!terminalId || !key || !value) throw new Error('Invalid params: terminalId, key, value are required');
+    metadataMgr.setStatus(terminalId, key, value, params['icon'] as string | undefined, params['color'] as string | undefined);
+    return { ok: true };
+  });
+
+  router.register('metadata.get', async (params) => {
+    const terminalId = params['terminalId'] as string | undefined;
+    if (!terminalId) throw new Error('Invalid params: terminalId is required');
+    return metadataMgr.getMetadata(terminalId) ?? null;
+  });
+
+  router.register('metadata.progress', async (params) => {
+    const terminalId = params['terminalId'] as string | undefined;
+    const value = params['value'] as number | undefined;
+    if (!terminalId || value === undefined) throw new Error('Invalid params: terminalId and value are required');
+    metadataMgr.setProgress(terminalId, value, params['label'] as string | undefined);
+    return { ok: true };
+  });
+
+  router.register('metadata.log', async (params) => {
+    const terminalId = params['terminalId'] as string | undefined;
+    const message = params['message'] as string | undefined;
+    if (!terminalId || !message) throw new Error('Invalid params: terminalId and message are required');
+    metadataMgr.addLog(terminalId, message, (params['level'] as 'info' | 'progress' | 'success' | 'warning' | 'error') ?? 'info');
+    return { ok: true };
+  });
 
   // ─── Auto Restore ────────────────────────────────────────────
   if (config.get<boolean>('autoRestore', false)) {

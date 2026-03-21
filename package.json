@@ -55,7 +55,8 @@
       "vmux": [
         { "id": "vmux.notifications", "name": "Notifications" },
         { "id": "vmux.terminals", "name": "Terminals" },
-        { "id": "vmux.sessions", "name": "Sessions" }
+        { "id": "vmux.sessions", "name": "Sessions" },
+        { "id": "vmux.metadata", "name": "Metadata" }
       ]
     },
     "commands": [

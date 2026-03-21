@@ -242,6 +242,43 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
       break;
     }
 
+    // ── Metadata ──
+    case 'set-status': {
+      const key = parsed.positional[0];
+      const value = parsed.positional[1];
+      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      if (!key || !value) throw new Error('<key> and <value> arguments are required');
+      const result = await rpcCall(address, 'metadata.set', {
+        terminalId, key, value,
+        icon: parsed.flags['icon'],
+        color: parsed.flags['color'],
+      });
+      printResult(result, json);
+      break;
+    }
+    case 'set-progress': {
+      const value = parseFloat(parsed.positional[0] ?? '');
+      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      if (isNaN(value)) throw new Error('<value> argument (0.0-1.0) is required');
+      const result = await rpcCall(address, 'metadata.progress', {
+        terminalId, value,
+        label: parsed.flags['label'],
+      });
+      printResult(result, json);
+      break;
+    }
+    case 'log': {
+      const message = parsed.positional[0];
+      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      if (!message) throw new Error('<message> argument is required');
+      const result = await rpcCall(address, 'metadata.log', {
+        terminalId, message,
+        level: parsed.flags['level'] ?? 'info',
+      });
+      printResult(result, json);
+      break;
+    }
+
     case '--help':
     case 'help':
     case '':
@@ -274,6 +311,11 @@ Sessions:
   save-session --name <n>
   restore-session --name <n>
   list-sessions [--json]
+
+Metadata:
+  set-status <key> <value> [--icon <name>] [--color <hex>] [--terminal <id>]
+  set-progress <value> [--label <text>] [--terminal <id>]
+  log <message> [--level info|progress|success|warning|error] [--terminal <id>]
 
 Options:
   --socket <path>   IPC socket path or HTTP URL

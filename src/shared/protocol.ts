@@ -60,6 +60,32 @@ export interface SessionNameParams {
   name: string;
 }
 
+// Phase 2: Metadata methods
+
+export interface MetadataSetParams {
+  terminalId: string;
+  key: string;
+  value: string;
+  icon?: string;
+  color?: string;
+}
+
+export interface MetadataGetParams {
+  terminalId: string;
+}
+
+export interface ProgressSetParams {
+  terminalId: string;
+  value: number;
+  label?: string;
+}
+
+export interface LogAddParams {
+  terminalId: string;
+  message: string;
+  level?: 'info' | 'progress' | 'success' | 'warning' | 'error';
+}
+
 // Method handler type
 export type MethodHandler = (params: Record<string, unknown>) => Promise<unknown>;
 
