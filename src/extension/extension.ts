@@ -154,8 +154,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // ─── Commands ────────────────────────────────────────────────
   context.subscriptions.push(
     vscode.commands.registerCommand('vmux.notifications.focus', () => {
-      vscode.commands.executeCommand('vmux.notifications.focus');
+      vscode.commands.executeCommand('workbench.view.extension.vmux');
     }),
+
+    // Fix: wire AgentGrid cleanup to terminal close events
+    vscode.window.onDidCloseTerminal((t) => agentGrid.removeTerminal(t)),
 
     vscode.commands.registerCommand('vmux.onNotificationClick', (n: { id: string; terminalId?: string }) => {
       notificationMgr.markRead(n.id);

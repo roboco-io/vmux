@@ -44,8 +44,8 @@ function discoverSocket(flags: Record<string, string>): string {
   // 1. --socket flag (highest priority)
   if (flags['socket']) return flags['socket'];
 
-  // 2. VSCODE_CMUX_SOCKET env
-  const envSocket = process.env['VSCODE_CMUX_SOCKET'];
+  // 2. VMUX_SOCKET env
+  const envSocket = process.env['VMUX_SOCKET'];
   if (envSocket) return envSocket;
 
   // 3. Glob for /tmp/vmux-*.sock (most recent)
@@ -66,7 +66,7 @@ function discoverSocket(flags: Record<string, string>): string {
 
   throw new Error(
     'Cannot find IPC server. Ensure VS Code with vmux extension is running.\n' +
-    'Set VSCODE_CMUX_SOCKET or use --socket <path>.'
+    'Set VMUX_SOCKET or use --socket <path>.'
   );
 }
 

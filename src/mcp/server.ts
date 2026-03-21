@@ -188,6 +188,43 @@ server.tool('list_sessions', 'List saved sessions', {}, async () => {
   return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
 });
 
+// ── Agent Grid Tools ──
+
+server.tool('launch_agent_grid', 'Create an NxM grid of split terminals', {
+  name: z.string().describe('Grid name'),
+  rows: z.number().min(1).describe('Number of rows'),
+  cols: z.number().min(1).describe('Number of columns'),
+  cwd: z.string().optional().describe('Working directory for all terminals'),
+}, async ({ name, rows, cols, cwd }) => {
+  const result = await rpcCall('agent.grid', { name, rows, cols, cwd });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('broadcast_to_grid', 'Send text to all terminals in a grid', {
+  grid: z.string().describe('Grid name'),
+  text: z.string().describe('Text to broadcast'),
+}, async ({ grid, text }) => {
+  await rpcCall('agent.broadcast', { grid, text });
+  return { content: [{ type: 'text' as const, text: `Broadcast to ${grid}: ${text}` }] };
+});
+
+server.tool('save_agent_preset', 'Save an agent launch preset', {
+  name: z.string().describe('Preset name'),
+  command: z.string().optional().describe('Command to run on launch'),
+  cwd: z.string().optional().describe('Working directory'),
+  shellPath: z.string().optional().describe('Shell executable path'),
+}, async ({ name, command, cwd, shellPath }) => {
+  await rpcCall('agent.preset.save', { name, command, cwd, shellPath });
+  return { content: [{ type: 'text' as const, text: `Agent preset saved: ${name}` }] };
+});
+
+server.tool('launch_agent_preset', 'Launch a terminal from a saved agent preset', {
+  name: z.string().describe('Preset name'),
+}, async ({ name }) => {
+  const result = await rpcCall('agent.preset.launch', { name });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
 // ─── Start ──────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
