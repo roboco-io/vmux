@@ -41,7 +41,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   // ─── Env Builder ─────────────────────────────────────────────
-  const envPrefix = config.get<string>('envPrefix', 'VSCODE_CMUX');
+  const envPrefix = config.get<string>('envPrefix', 'VMUX');
   function buildEnv(terminalId: string): Record<string, string> {
     return {
       [`${envPrefix}_TERMINAL_ID`]: terminalId,
@@ -65,10 +65,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const terminalsTree = new TerminalsTreeDataProvider(terminalMgr);
   const metadataTree = new MetadataTreeDataProvider(metadataMgr);
 
-  vscode.window.registerTreeDataProvider('vmux.notifications', notifTree);
-  vscode.window.registerTreeDataProvider('vmux.sessions', sessionsTree);
-  vscode.window.registerTreeDataProvider('vmux.terminals', terminalsTree);
-  vscode.window.registerTreeDataProvider('vmux.metadata', metadataTree);
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider('vmux.notifications', notifTree),
+    vscode.window.registerTreeDataProvider('vmux.sessions', sessionsTree),
+    vscode.window.registerTreeDataProvider('vmux.terminals', terminalsTree),
+    vscode.window.registerTreeDataProvider('vmux.metadata', metadataTree),
+  );
 
   // Wire change events → refresh TreeViews
   notificationMgr.onDidChange = () => { notifTree.refresh(); updateStatusBar(); };
@@ -275,7 +277,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     const terminalId = params['terminalId'] as string | undefined;
     const key = params['key'] as string | undefined;
     const value = params['value'] as string | undefined;
-    if (!terminalId || !key || !value) throw new Error('Invalid params: terminalId, key, value are required');
+    if (terminalId === undefined || key === undefined || value === undefined) throw new Error('Invalid params: terminalId, key, value are required');
     metadataMgr.setStatus(terminalId, key, value, params['icon'] as string | undefined, params['color'] as string | undefined);
     return { ok: true };
   });

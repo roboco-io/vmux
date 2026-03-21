@@ -99,6 +99,15 @@ describe('MetadataManager', () => {
     assert.equal(count, 4);
   });
 
+  it('cross-terminal isolation', () => {
+    const mgr = new MetadataManager();
+    mgr.setStatus('t1', 'build', 'passing');
+    mgr.setStatus('t2', 'build', 'failing');
+
+    assert.equal(mgr.getMetadata('t1')!.statuses[0]!.value, 'passing');
+    assert.equal(mgr.getMetadata('t2')!.statuses[0]!.value, 'failing');
+  });
+
   it('multiple status keys per terminal', () => {
     const mgr = new MetadataManager();
     mgr.setStatus('t1', 'build', 'passing');

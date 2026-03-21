@@ -37,7 +37,7 @@ export class MetadataTreeDataProvider implements vscode.TreeDataProvider<TreeIte
         `${bar} ${pct}%${p.label ? ` — ${p.label}` : ''}`,
         vscode.TreeItemCollapsibleState.None,
       );
-      item.iconPath = new vscode.ThemeIcon('loading~spin');
+      item.iconPath = new vscode.ThemeIcon(p.value >= 1 ? 'pass' : 'loading~spin');
       return item;
     }
 
