@@ -108,8 +108,18 @@
         "command": "vmux.jumpToNotification",
         "key": "ctrl+shift+u",
         "mac": "cmd+shift+u"
+      },
+      {
+        "command": "vmux.createTerminal",
+        "key": "ctrl+t",
+        "mac": "cmd+t"
       }
     ],
+    "configurationDefaults": {
+      "terminal.integrated.defaultLocation": "editor",
+      "terminal.integrated.confirmOnKill": "hasChildProcesses",
+      "terminal.integrated.confirmOnExit": "hasChildProcesses"
+    },
     "configuration": {
       "title": "vmux",
       "properties": {
