@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "vmux": {
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/mcp.js"],
+      "env": {
+        "VMUX_SOCKET": ""
+      }
+    }
+  }
+}

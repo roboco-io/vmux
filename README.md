@@ -18,9 +18,9 @@ AI 코딩 에이전트(Claude Code, Codex, Gemini CLI 등)를 위한 VS Code 터
 - **Sidebar Metadata Panel** — 터미널별 상태 pill, 진행률 바, 구조화된 로그 (`vmux set-status`, `set-progress`, `log`)
 - **Terminal Activity Monitor** — Shell Integration API로 active/idle 상태, 마지막 명령 시간, CWD, 종료 코드 추적
 
-### Phase 3: Programmable Control (예정)
-- **Multi-Agent Orchestration** — 에이전트 그리드 레이아웃, 명령 브로드캐스트, 에이전트 실행 템플릿
-- **MCP Server Integration** — AI 에이전트가 MCP tool call로 터미널/알림/세션 제어
+### Phase 3: Programmable Control (구현 완료)
+- **Multi-Agent Orchestration** — 에이전트 그리드 레이아웃 (`vmux launch-grid`), 명령 브로드캐스트 (`vmux broadcast`), 에이전트 실행 템플릿
+- **MCP Server Integration** — 17개 MCP 도구로 AI 에이전트가 터미널/알림/세션/메타데이터/그리드 제어
 
 ## Architecture
 

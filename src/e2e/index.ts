@@ -248,6 +248,97 @@ async function testIpcTransports(address: string): Promise<void> {
   console.log('  [8.5] ✓ IPC transport tests passed');
 }
 
+async function testMetadataPanel(address: string): Promise<void> {
+  console.log('  [P2.1] Testing metadata panel...');
+
+  const terminalId = 'e2e-metadata-test';
+
+  // Set status
+  await rpcCall(address, 'metadata.set', { terminalId, key: 'build', value: 'passing', icon: 'check' });
+  await rpcCall(address, 'metadata.set', { terminalId, key: 'coverage', value: '87%' });
+
+  // Set progress
+  await rpcCall(address, 'metadata.progress', { terminalId, value: 0.75, label: 'Testing...' });
+
+  // Add logs
+  await rpcCall(address, 'metadata.log', { terminalId, message: 'Build started', level: 'info' });
+  await rpcCall(address, 'metadata.log', { terminalId, message: 'Tests running', level: 'progress' });
+
+  // Get metadata
+  const meta = await rpcCall(address, 'metadata.get', { terminalId }) as {
+    terminalId: string; statuses: { key: string }[]; progress: { value: number }; logs: { message: string }[];
+  };
+  assert.ok(meta, 'Metadata should exist');
+  assert.equal(meta.terminalId, terminalId);
+  assert.equal(meta.statuses.length, 2, 'Should have 2 status pills');
+  assert.ok(meta.progress.value === 0.75, 'Progress should be 0.75');
+  assert.equal(meta.logs.length, 2, 'Should have 2 log entries');
+
+  // Update progress to 100%
+  await rpcCall(address, 'metadata.progress', { terminalId, value: 1.0, label: 'Done' });
+  const updated = await rpcCall(address, 'metadata.get', { terminalId }) as { progress: { value: number } };
+  assert.equal(updated.progress.value, 1.0);
+
+  console.log('  [P2.1] ✓ Metadata panel tests passed');
+}
+
+async function testAgentGrid(address: string): Promise<void> {
+  console.log('  [P3.1] Testing agent grid...');
+
+  // Create a 2x1 grid
+  const result = await rpcCall(address, 'agent.grid', { name: 'e2e-grid', rows: 2, cols: 1 }) as { ok: boolean; terminals: number };
+  assert.ok(result.ok);
+  assert.equal(result.terminals, 2, 'Should create 2 terminals');
+
+  await sleep(500);
+
+  // List grids
+  const grids = await rpcCall(address, 'agent.grids', {}) as Array<{ name: string; terminalCount: number }>;
+  const found = grids.find(g => g.name === 'e2e-grid');
+  assert.ok(found, 'Grid should appear in list');
+  assert.equal(found!.terminalCount, 2);
+
+  // Broadcast
+  await rpcCall(address, 'agent.broadcast', { grid: 'e2e-grid', text: 'echo hello from grid' });
+
+  // Verify error for non-existent grid
+  try {
+    await rpcCall(address, 'agent.broadcast', { grid: 'nonexistent', text: 'test' });
+    assert.fail('Should throw for unknown grid');
+  } catch (err) {
+    assert.ok(err instanceof Error);
+  }
+
+  console.log('  [P3.1] ✓ Agent grid tests passed');
+}
+
+async function testAgentPresets(address: string): Promise<void> {
+  console.log('  [P3.2] Testing agent presets...');
+
+  // Save preset
+  await rpcCall(address, 'agent.preset.save', { name: 'e2e-agent', command: 'echo hello', cwd: '/tmp' });
+
+  // List presets
+  const presets = await rpcCall(address, 'agent.preset.list', {}) as Array<{ name: string }>;
+  assert.ok(presets.find(p => p.name === 'e2e-agent'), 'Preset should appear in list');
+
+  // Launch preset
+  const launched = await rpcCall(address, 'agent.preset.launch', { name: 'e2e-agent' }) as { name: string };
+  assert.equal(launched.name, 'e2e-agent');
+
+  await sleep(500);
+
+  // Verify error for non-existent preset
+  try {
+    await rpcCall(address, 'agent.preset.launch', { name: 'nonexistent-preset' });
+    assert.fail('Should throw for unknown preset');
+  } catch (err) {
+    assert.ok(err instanceof Error);
+  }
+
+  console.log('  [P3.2] ✓ Agent preset tests passed');
+}
+
 // ─── Entry Point ────────────────────────────────────────────────
 
 export async function run(): Promise<void> {
@@ -259,7 +350,7 @@ export async function run(): Promise<void> {
 
   const errors: Error[] = [];
 
-  for (const testFn of [testNotificationSystem, testSessionManagement, testEnvInjection, testIpcTransports]) {
+  for (const testFn of [testNotificationSystem, testSessionManagement, testEnvInjection, testIpcTransports, testMetadataPanel, testAgentGrid, testAgentPresets]) {
     try {
       await testFn(address);
     } catch (err) {
@@ -269,7 +360,8 @@ export async function run(): Promise<void> {
     }
   }
 
-  console.log(`\n=== Results: ${4 - errors.length}/4 passed ===\n`);
+  const total = 7;
+  console.log(`\n=== Results: ${total - errors.length}/${total} passed ===\n`);
 
   if (errors.length > 0) {
     throw new Error(`${errors.length} E2E test(s) failed:\n${errors.map(e => `  - ${e.message}`).join('\n')}`);
