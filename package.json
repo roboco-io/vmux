@@ -12,6 +12,7 @@
   "engines": {
     "vscode": "^1.99.0"
   },
+  "icon": "resources/vmux-icon.png",
   "categories": [
     "Other"
   ],
