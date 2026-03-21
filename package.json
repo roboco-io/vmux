@@ -16,7 +16,7 @@
   "activationEvents": ["onStartupFinished"],
   "main": "./dist/extension.js",
   "bin": {
-    "vscode-cmux": "./dist/cli.js"
+    "vmux": "./dist/cli.js"
   },
   "scripts": {
     "build": "npm run build:ext && npm run build:cli",
@@ -45,60 +45,60 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "cmux",
-          "title": "cmux",
-          "icon": "resources/cmux-icon.svg"
+          "id": "vmux",
+          "title": "vmux",
+          "icon": "resources/vmux-icon.svg"
         }
       ]
     },
     "views": {
-      "cmux": [
-        { "id": "cmux.notifications", "name": "Notifications" },
-        { "id": "cmux.terminals", "name": "Terminals" },
-        { "id": "cmux.sessions", "name": "Sessions" }
+      "vmux": [
+        { "id": "vmux.notifications", "name": "Notifications" },
+        { "id": "vmux.terminals", "name": "Terminals" },
+        { "id": "vmux.sessions", "name": "Sessions" }
       ]
     },
     "commands": [
-      { "command": "cmux.createTerminal", "title": "cmux: Create Terminal" },
-      { "command": "cmux.saveSession", "title": "cmux: Save Session" },
-      { "command": "cmux.restoreSession", "title": "cmux: Restore Session" },
-      { "command": "cmux.jumpToNotification", "title": "cmux: Jump to Latest Notification" },
-      { "command": "cmux.clearNotifications", "title": "cmux: Clear Notifications" }
+      { "command": "vmux.createTerminal", "title": "vmux: Create Terminal" },
+      { "command": "vmux.saveSession", "title": "vmux: Save Session" },
+      { "command": "vmux.restoreSession", "title": "vmux: Restore Session" },
+      { "command": "vmux.jumpToNotification", "title": "vmux: Jump to Latest Notification" },
+      { "command": "vmux.clearNotifications", "title": "vmux: Clear Notifications" }
     ],
     "keybindings": [
       {
-        "command": "cmux.jumpToNotification",
+        "command": "vmux.jumpToNotification",
         "key": "ctrl+shift+u",
         "mac": "cmd+shift+u"
       }
     ],
     "configuration": {
-      "title": "cmux",
+      "title": "vmux",
       "properties": {
-        "cmux.ipc.type": {
+        "vmux.ipc.type": {
           "type": "string",
           "enum": ["unix", "http"],
           "default": "unix",
           "description": "IPC transport type (unix socket or HTTP)"
         },
-        "cmux.ipc.port": {
+        "vmux.ipc.port": {
           "type": "number",
           "default": 0,
           "description": "HTTP port (0 = auto-assign)"
         },
-        "cmux.autoRestore": {
+        "vmux.autoRestore": {
           "type": "boolean",
           "default": false,
           "description": "Restore last terminal session on workspace open"
         },
-        "cmux.systemNotifications": {
+        "vmux.systemNotifications": {
           "type": "boolean",
           "default": true,
           "description": "Show VS Code notification popups for agent notifications"
         },
-        "cmux.envPrefix": {
+        "vmux.envPrefix": {
           "type": "string",
-          "default": "VSCODE_CMUX",
+          "default": "VMUX",
           "description": "Environment variable prefix for terminal injection"
         }
       }

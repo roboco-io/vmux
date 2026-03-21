@@ -13,7 +13,7 @@ import { TerminalsTreeDataProvider } from './views/terminals-tree.js';
 let ipcServer: IpcServer | null = null;
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  const config = vscode.workspace.getConfiguration('cmux');
+  const config = vscode.workspace.getConfiguration('vmux');
   const router = createMethodRouter();
 
   // ─── IPC Server ──────────────────────────────────────────────
@@ -31,10 +31,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   try {
     ipcAddress = await ipcServer.start();
-    console.log(`[cmux] IPC server started: ${ipcAddress}`);
+    console.log(`[vmux] IPC server started: ${ipcAddress}`);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    vscode.window.showErrorMessage(`cmux: Failed to start IPC server: ${msg}`);
+    vscode.window.showErrorMessage(`vmux: Failed to start IPC server: ${msg}`);
   }
 
   // ─── Env Builder ─────────────────────────────────────────────
@@ -59,9 +59,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const sessionsTree = new SessionsTreeDataProvider(sessionMgr);
   const terminalsTree = new TerminalsTreeDataProvider(terminalMgr);
 
-  vscode.window.registerTreeDataProvider('cmux.notifications', notifTree);
-  vscode.window.registerTreeDataProvider('cmux.sessions', sessionsTree);
-  vscode.window.registerTreeDataProvider('cmux.terminals', terminalsTree);
+  vscode.window.registerTreeDataProvider('vmux.notifications', notifTree);
+  vscode.window.registerTreeDataProvider('vmux.sessions', sessionsTree);
+  vscode.window.registerTreeDataProvider('vmux.terminals', terminalsTree);
 
   // Wire change events → refresh TreeViews
   notificationMgr.onDidChange = () => { notifTree.refresh(); updateStatusBar(); };
@@ -70,7 +70,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // ─── StatusBar ───────────────────────────────────────────────
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-  statusBar.command = 'cmux.notifications.focus';
+  statusBar.command = 'vmux.notifications.focus';
   context.subscriptions.push(statusBar);
 
   function updateStatusBar(): void {
@@ -93,11 +93,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // ─── TerminalProfileProvider ─────────────────────────────────
   context.subscriptions.push(
-    vscode.window.registerTerminalProfileProvider('cmux.terminalProfile', {
+    vscode.window.registerTerminalProfileProvider('vmux.terminalProfile', {
       provideTerminalProfile(): vscode.TerminalProfile {
-        const id = `cmux-${Date.now()}`;
+        const id = `vmux-${Date.now()}`;
         return new vscode.TerminalProfile({
-          name: 'cmux',
+          name: 'vmux',
           env: buildEnv(id),
         });
       },
@@ -106,25 +106,25 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // ─── Commands ────────────────────────────────────────────────
   context.subscriptions.push(
-    vscode.commands.registerCommand('cmux.notifications.focus', () => {
-      vscode.commands.executeCommand('cmux.notifications.focus');
+    vscode.commands.registerCommand('vmux.notifications.focus', () => {
+      vscode.commands.executeCommand('vmux.notifications.focus');
     }),
 
-    vscode.commands.registerCommand('cmux.onNotificationClick', (n: { id: string; terminalId?: string }) => {
+    vscode.commands.registerCommand('vmux.onNotificationClick', (n: { id: string; terminalId?: string }) => {
       notificationMgr.markRead(n.id);
       if (n.terminalId) {
         try { terminalMgr.focus(n.terminalId); } catch { /* terminal may be gone */ }
       }
     }),
 
-    vscode.commands.registerCommand('cmux.onTerminalClick', (t: { name: string }) => {
+    vscode.commands.registerCommand('vmux.onTerminalClick', (t: { name: string }) => {
       try { terminalMgr.focus(t.name); } catch { /* terminal may be gone */ }
     }),
 
-    vscode.commands.registerCommand('cmux.jumpToNotification', () => {
+    vscode.commands.registerCommand('vmux.jumpToNotification', () => {
       const n = notificationMgr.getLatestUnread();
       if (!n) {
-        vscode.window.showInformationMessage('cmux: No unread notifications');
+        vscode.window.showInformationMessage('vmux: No unread notifications');
         return;
       }
       notificationMgr.markRead(n.id);
@@ -133,27 +133,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
     }),
 
-    vscode.commands.registerCommand('cmux.clearNotifications', () => {
+    vscode.commands.registerCommand('vmux.clearNotifications', () => {
       notificationMgr.clear();
     }),
 
-    vscode.commands.registerCommand('cmux.createTerminal', async () => {
+    vscode.commands.registerCommand('vmux.createTerminal', async () => {
       const name = await vscode.window.showInputBox({ prompt: 'Terminal name' });
       if (name) terminalMgr.create(name);
     }),
 
-    vscode.commands.registerCommand('cmux.saveSession', async () => {
+    vscode.commands.registerCommand('vmux.saveSession', async () => {
       const name = await vscode.window.showInputBox({ prompt: 'Session name' });
       if (name) {
         sessionMgr.save(name);
-        vscode.window.showInformationMessage(`cmux: Session "${name}" saved`);
+        vscode.window.showInformationMessage(`vmux: Session "${name}" saved`);
       }
     }),
 
-    vscode.commands.registerCommand('cmux.restoreSession', async () => {
+    vscode.commands.registerCommand('vmux.restoreSession', async () => {
       const sessions = sessionMgr.list();
       if (sessions.length === 0) {
-        vscode.window.showInformationMessage('cmux: No saved sessions');
+        vscode.window.showInformationMessage('vmux: No saved sessions');
         return;
       }
       const pick = await vscode.window.showQuickPick(
@@ -162,17 +162,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       );
       if (pick) {
         await sessionMgr.restore(pick.label);
-        vscode.window.showInformationMessage(`cmux: Session "${pick.label}" restored`);
+        vscode.window.showInformationMessage(`vmux: Session "${pick.label}" restored`);
       }
     }),
 
-    vscode.commands.registerCommand('cmux.deleteSession', (item: { name: string }) => {
+    vscode.commands.registerCommand('vmux.deleteSession', (item: { name: string }) => {
       sessionMgr.delete(item.name);
     }),
 
-    vscode.commands.registerCommand('cmux.restoreSessionFromTree', async (item: { name: string }) => {
+    vscode.commands.registerCommand('vmux.restoreSessionFromTree', async (item: { name: string }) => {
       await sessionMgr.restore(item.name);
-      vscode.window.showInformationMessage(`cmux: Session "${item.name}" restored`);
+      vscode.window.showInformationMessage(`vmux: Session "${item.name}" restored`);
     }),
   );
 

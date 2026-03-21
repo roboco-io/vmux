@@ -10,7 +10,7 @@ export function getSocketPath(workspaceUri: string): string {
     .substring(0, 8);
 
   const dir = process.env['XDG_RUNTIME_DIR'] ?? os.tmpdir();
-  return path.join(dir, `vscode-cmux-${hash}.sock`);
+  return path.join(dir, `vmux-${hash}.sock`);
 }
 
 export function isUnixPlatform(): boolean {

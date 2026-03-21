@@ -6,14 +6,14 @@
 #### Scenario: 세션 저장
 - **WHEN** `session.save` 요청이 `name` 파라미터와 함께 수신되면
 - **THEN** 현재 열린 모든 터미널의 이름, CWD, 환경 변수, 셸 경로를 캡처해야 한다
-- **THEN** `.vscode/cmux-sessions.json` 파일에 해당 이름으로 프리셋을 저장해야 한다
+- **THEN** `.vscode/vmux-sessions.json` 파일에 해당 이름으로 프리셋을 저장해야 한다
 
 #### Scenario: 동일 이름 세션 덮어쓰기
 - **WHEN** 이미 존재하는 세션 이름으로 저장 요청이 수신되면
 - **THEN** 기존 프리셋을 새 상태로 덮어써야 한다
 
 #### Scenario: Command Palette에서 세션 저장
-- **WHEN** 사용자가 Command Palette에서 `cmux: Save Session`을 실행할 때
+- **WHEN** 사용자가 Command Palette에서 `vmux: Save Session`을 실행할 때
 - **THEN** 세션 이름 입력 프롬프트가 표시되어야 한다
 - **THEN** 이름 입력 후 현재 터미널 상태가 저장되어야 한다
 
@@ -33,7 +33,7 @@
 - **THEN** "세션을 찾을 수 없습니다" 에러를 반환해야 한다
 
 #### Scenario: Command Palette에서 세션 복원
-- **WHEN** 사용자가 Command Palette에서 `cmux: Restore Session`을 실행할 때
+- **WHEN** 사용자가 Command Palette에서 `vmux: Restore Session`을 실행할 때
 - **THEN** 저장된 세션 목록이 QuickPick으로 표시되어야 한다
 - **THEN** 선택한 세션이 복원되어야 한다
 
@@ -58,15 +58,15 @@
 
 #### Scenario: TreeView에서 세션 삭제
 - **WHEN** 사용자가 TreeView에서 세션 항목의 "삭제" 버튼을 클릭할 때
-- **THEN** 해당 세션 프리셋이 `.vscode/cmux-sessions.json`에서 제거되어야 한다
+- **THEN** 해당 세션 프리셋이 `.vscode/vmux-sessions.json`에서 제거되어야 한다
 
 ### Requirement: 자동 복원
 워크스페이스 열릴 때 마지막 터미널 상태를 자동 복원할 수 있어야 한다(SHALL).
 
 #### Scenario: 자동 복원 활성화
-- **WHEN** 설정 `cmux.autoRestore`가 `true`이고 워크스페이스가 열릴 때
+- **WHEN** 설정 `vmux.autoRestore`가 `true`이고 워크스페이스가 열릴 때
 - **THEN** 마지막으로 저장된 터미널 상태가 자동으로 복원되어야 한다
 
 #### Scenario: 자동 복원 비활성화
-- **WHEN** 설정 `cmux.autoRestore`가 `false`일 때
+- **WHEN** 설정 `vmux.autoRestore`가 `false`일 때
 - **THEN** 자동 복원이 실행되지 않아야 한다(MUST NOT)

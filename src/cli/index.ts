@@ -48,11 +48,11 @@ function discoverSocket(flags: Record<string, string>): string {
   const envSocket = process.env['VSCODE_CMUX_SOCKET'];
   if (envSocket) return envSocket;
 
-  // 3. Glob for /tmp/vscode-cmux-*.sock (most recent)
+  // 3. Glob for /tmp/vmux-*.sock (most recent)
   const tmpDir = process.env['XDG_RUNTIME_DIR'] ?? os.tmpdir();
   try {
     const files = fs.readdirSync(tmpDir)
-      .filter(f => f.startsWith('vscode-cmux-') && f.endsWith('.sock'))
+      .filter(f => f.startsWith('vmux-') && f.endsWith('.sock'))
       .map(f => {
         const full = path.join(tmpDir, f);
         return { path: full, mtime: fs.statSync(full).mtimeMs };
@@ -256,7 +256,7 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
 }
 
 function printUsage(): void {
-  process.stdout.write(`Usage: vscode-cmux <command> [options]
+  process.stdout.write(`Usage: vmux <command> [options]
 
 Notifications:
   notify --title <t> [--body <b>] [--level info|warning|error]

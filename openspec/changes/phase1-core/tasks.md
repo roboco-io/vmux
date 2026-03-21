@@ -29,7 +29,7 @@
 ## 4. CLI Tool
 
 - [x] 4.1 `src/cli/index.ts`: argv 파서 (내장 `process.argv` 기반, 외부 의존성 없음)
-- [x] 4.2 소켓 탐지 로직: VSCODE_CMUX_SOCKET → --socket 옵션 → /tmp glob 순서
+- [x] 4.2 소켓 탐지 로직: VMUX_SOCKET → --socket 옵션 → /tmp glob 순서
 - [x] 4.3 JSON-RPC 클라이언트: Unix socket(`net`) + HTTP(`http`) 요청 전송
 - [x] 4.4 notify 명령: --title, --body, --level 파싱 → notification.create 요청
 - [x] 4.5 list-notifications / clear-notifications 명령 구현
@@ -49,29 +49,29 @@
 - [x] 5.5 TreeView 항목: level별 아이콘(info/warning/error), title, timestamp, read 상태 스타일
 - [x] 5.6 알림 클릭 → 터미널 포커스 이동 + read 상태 변경
 - [x] 5.7 StatusBarItem: 미읽은 알림 수 배지, bell 아이콘, 클릭 시 TreeView 포커스
-- [x] 5.8 `cmux.jumpToNotification` 커맨드: 최신 미읽은 알림 → 터미널 포커스
+- [x] 5.8 `vmux.jumpToNotification` 커맨드: 최신 미읽은 알림 → 터미널 포커스
 - [x] 5.9 keybinding 등록: Cmd+Shift+U (macOS) / Ctrl+Shift+U (Windows/Linux)
-- [x] 5.10 시스템 알림: cmux.systemNotifications 설정에 따라 showInformationMessage/Warning/Error 호출
+- [x] 5.10 시스템 알림: vmux.systemNotifications 설정에 따라 showInformationMessage/Warning/Error 호출
 - [x] 5.11 알림 시스템 단위 테스트: 생성/조회/삭제/읽음 처리, StatusBar 업데이트
 
 ## 6. Terminal Sessions
 
 - [x] 6.1 `src/extension/sessions/manager.ts`: SessionManager (저장, 복원, 목록, 삭제)
-- [x] 6.2 세션 프리셋 파일 I/O: `.vscode/cmux-sessions.json` 읽기/쓰기
+- [x] 6.2 세션 프리셋 파일 I/O: `.vscode/vmux-sessions.json` 읽기/쓰기
 - [x] 6.3 현재 터미널 상태 캡처: 이름, CWD(가능한 경우), 셸 경로 수집
 - [x] 6.4 세션 복원: createTerminal 순차 호출, group 번호에 따른 split 터미널 생성
 - [x] 6.5 IPC 메서드 핸들러 등록: session.save, session.restore, session.list
 - [x] 6.6 `src/extension/views/sessions-tree.ts`: SessionsTreeDataProvider 구현
 - [x] 6.7 TreeView 항목: 세션 이름, 하위에 터미널 목록, 복원/삭제 인라인 버튼
-- [x] 6.8 Command Palette 커맨드: cmux.saveSession (이름 입력 프롬프트), cmux.restoreSession (QuickPick)
-- [x] 6.9 자동 복원: cmux.autoRestore 설정 → activate 시 마지막 상태 복원
+- [x] 6.8 Command Palette 커맨드: vmux.saveSession (이름 입력 프롬프트), vmux.restoreSession (QuickPick)
+- [x] 6.9 자동 복원: vmux.autoRestore 설정 → activate 시 마지막 상태 복원
 - [x] 6.10 세션 관리 단위 테스트: 저장/복원/목록/삭제, 파일 I/O
 
 ## 7. Environment Context & Terminal Management
 
 - [x] 7.1 `src/extension/terminals/manager.ts`: TerminalManager (생성, 목록, 포커스, 종료, 전송)
-- [x] 7.2 환경 변수 빌더: cmux.envPrefix 설정 반영, VSCODE_CMUX_* 변수 생성
-- [x] 7.3 TerminalProfileProvider 등록: "cmux" 프로파일, 기본 셸 + env 주입
+- [x] 7.2 환경 변수 빌더: vmux.envPrefix 설정 반영, VMUX_* 변수 생성
+- [x] 7.3 TerminalProfileProvider 등록: "vmux" 프로파일, 기본 셸 + env 주입
 - [x] 7.4 IPC 메서드 핸들러 등록: terminal.create, terminal.list, terminal.focus, terminal.close, terminal.send
 - [x] 7.5 `src/extension/views/terminals-tree.ts`: TerminalsTreeDataProvider 구현
 - [x] 7.6 TreeView 항목: 터미널 이름, CWD, 활성/종료 상태, 클릭 시 포커스
@@ -90,5 +90,5 @@
 
 - [x] 9.1 에이전트 hook 예제 작성: Claude Code, Codex, Gemini CLI 설정 가이드
 - [x] 9.2 CHANGELOG.md 초기 버전 작성
-- [x] 9.3 extension 아이콘 (resources/cmux-icon.svg) 생성
+- [x] 9.3 extension 아이콘 (resources/vmux-icon.svg) 생성
 - [x] 9.4 `vsce package` 로 .vsix 패키지 빌드 확인

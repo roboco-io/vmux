@@ -13,7 +13,7 @@ export class SessionManager {
   private getSessionFilePath(): string | undefined {
     const folder = vscode.workspace.workspaceFolders?.[0];
     if (!folder) return undefined;
-    return path.join(folder.uri.fsPath, '.vscode', 'cmux-sessions.json');
+    return path.join(folder.uri.fsPath, '.vscode', 'vmux-sessions.json');
   }
 
   private readSessions(): SessionPreset[] {

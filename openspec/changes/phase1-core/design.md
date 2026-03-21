@@ -22,7 +22,7 @@ cmux(macOS 네이티브 앱)가 이 문제를 해결하지만 플랫폼 제한�
 - Phase 2/3 기능 (메타데이터 패널, 활동 모니터, 다중 에이전트 오케스트레이션, MCP 서버)
 - GPU 터미널 렌더링 (VS Code 내장 xterm.js 사용)
 - 기존 터미널 출력 캡처 (proposed API 의존)
-- cmux CLI 100% 호환 모드 (Phase 1에서는 `vscode-cmux` prefix만)
+- cmux CLI 100% 호환 모드 (Phase 1에서는 `vmux` prefix만)
 
 ## Decisions
 
@@ -39,7 +39,7 @@ src/
 │   ├── sessions/       # 세션 매니저 + TreeView
 │   ├── terminals/      # 터미널 매니저 + env injection
 │   └── views/          # TreeDataProvider 구현
-├── cli/                # vscode-cmux CLI
+├── cli/                # vmux CLI
 │   └── index.ts        # 단일 진입점
 └── shared/             # 공유 타입 + JSON-RPC 프로토콜 정의
     ├── protocol.ts     # JSON-RPC 메서드/파라미터 타입
@@ -55,13 +55,13 @@ src/
 ### D2. IPC 프로토콜 — JSON-RPC 2.0 over Unix socket + HTTP fallback
 
 **Unix socket (macOS/Linux 기본):**
-- 소켓 경로: `${XDG_RUNTIME_DIR:-/tmp}/vscode-cmux-${workspaceHash}.sock`
+- 소켓 경로: `${XDG_RUNTIME_DIR:-/tmp}/vmux-${workspaceHash}.sock`
 - `workspaceHash`: 워크스페이스 URI의 SHA-256 앞 8자리 (다중 윈도우 충돌 방지)
 - 파일 권한 0600 (소유자만 접근)
 
 **HTTP fallback (Windows 또는 설정):**
 - `http://127.0.0.1:{PORT}` (PORT는 OS가 할당하는 ephemeral port)
-- 포트를 환경 변수 `VSCODE_CMUX_SOCKET`에 `http://127.0.0.1:{PORT}` 형태로 주입
+- 포트를 환경 변수 `VMUX_SOCKET`에 `http://127.0.0.1:{PORT}` 형태로 주입
 
 **프로토콜:** JSON-RPC 2.0 (batch 미지원). 요청/응답 한 쌍.
 
@@ -91,25 +91,25 @@ type Methods = {
 CLI는 Node.js 단일 파일로 번들. 외부 의존성 없이 `net` + `http` 모듈만 사용.
 
 ```bash
-vscode-cmux notify --title "Done" --body "Task complete" --level info
-vscode-cmux list-notifications --json
-vscode-cmux clear-notifications
-vscode-cmux create-terminal --name "agent-1" --cwd /project
-vscode-cmux list-terminals --json
-vscode-cmux send --terminal "agent-1" "npm test"
-vscode-cmux focus --terminal "agent-1"
-vscode-cmux close --terminal "agent-1"
-vscode-cmux save-session --name "dev-setup"
-vscode-cmux restore-session --name "dev-setup"
-vscode-cmux list-sessions --json
+vmux notify --title "Done" --body "Task complete" --level info
+vmux list-notifications --json
+vmux clear-notifications
+vmux create-terminal --name "agent-1" --cwd /project
+vmux list-terminals --json
+vmux send --terminal "agent-1" "npm test"
+vmux focus --terminal "agent-1"
+vmux close --terminal "agent-1"
+vmux save-session --name "dev-setup"
+vmux restore-session --name "dev-setup"
+vmux list-sessions --json
 ```
 
 **소켓 탐지 순서:**
-1. `VSCODE_CMUX_SOCKET` 환경 변수 (확장이 터미널에 주입)
+1. `VMUX_SOCKET` 환경 변수 (확장이 터미널에 주입)
 2. `--socket` CLI 옵션
-3. `/tmp/vscode-cmux-*.sock` glob → 가장 최근 수정된 소켓
+3. `/tmp/vmux-*.sock` glob → 가장 최근 수정된 소켓
 
-**배포:** 확장 내 `bin/vscode-cmux`로 번들 + npm global install 지원 (`package.json` bin 필드)
+**배포:** 확장 내 `bin/vmux`로 번들 + npm global install 지원 (`package.json` bin 필드)
 
 **대안:** Python/Rust CLI → Node.js는 확장과 타입 공유 가능, 별도 런타임 불필요
 
@@ -155,13 +155,13 @@ interface SessionPreset {
 ```
 
 **저장 위치:**
-- `.vscode/cmux-sessions.json`: 프로젝트별 프리셋 (git 공유 가능)
+- `.vscode/vmux-sessions.json`: 프로젝트별 프리셋 (git 공유 가능)
 - workspace storage: 현재 열린 터미널 상태 자동 저장 (자동 복원용)
 
 **복원 방식:**
 1. `vscode.window.createTerminal({ name, cwd, env, shellPath })` 순차 호출
 2. 같은 `group` 번호 터미널은 `TerminalLocation.Panel`로 split 그룹 생성
-3. 자동 복원: 설정 `cmux.autoRestore: true` → 워크스페이스 열릴 때 마지막 상태 복원
+3. 자동 복원: 설정 `vmux.autoRestore: true` → 워크스페이스 열릴 때 마지막 상태 복원
 
 **제한:** 스크롤백 버퍼 복원 불가 (VS Code API 제한). CWD, 이름, 환경 변수만 복원.
 
@@ -169,15 +169,15 @@ interface SessionPreset {
 
 ### D6. 환경 변수 주입 — TerminalOptions.env + TerminalProfileProvider
 
-모든 터미널에 자동으로 `VSCODE_CMUX_*` 환경 변수를 주입한다.
+모든 터미널에 자동으로 `VMUX_*` 환경 변수를 주입한다.
 
 ```typescript
 const env = {
-  VSCODE_CMUX_TERMINAL_ID: uniqueId,
-  VSCODE_CMUX_WORKSPACE: vscode.workspace.name ?? '',
-  VSCODE_CMUX_SESSION: currentSessionName ?? '',
-  VSCODE_CMUX_SOCKET: socketPath,  // Unix socket 경로 또는 http://... URL
-  VSCODE_CMUX_CWD: cwd,
+  VMUX_TERMINAL_ID: uniqueId,
+  VMUX_WORKSPACE: vscode.workspace.name ?? '',
+  VMUX_SESSION: currentSessionName ?? '',
+  VMUX_SOCKET: socketPath,  // Unix socket 경로 또는 http://... URL
+  VMUX_CWD: cwd,
 }
 ```
 
@@ -215,7 +215,7 @@ const env = {
 
 **[다중 VS Code 윈도우 충돌]** → workspaceHash로 소켓 경로 분리. 같은 워크스페이스를 두 윈도우에서 열면 두 번째가 기존 소켓을 인계(takeover)
 
-**[CLI 소켓 탐지 실패]** → `VSCODE_CMUX_SOCKET` 환경 변수가 최우선. 환경 변수 없으면 glob + mtime 기반 탐색. 실패 시 명확한 에러 메시지
+**[CLI 소켓 탐지 실패]** → `VMUX_SOCKET` 환경 변수가 최우선. 환경 변수 없으면 glob + mtime 기반 탐색. 실패 시 명확한 에러 메시지
 
 **[Windows Unix socket 미지원]** → HTTP fallback. Windows에서도 동일한 CLI 명령어 동작. 성능 차이 무시 가능 (localhost)
 

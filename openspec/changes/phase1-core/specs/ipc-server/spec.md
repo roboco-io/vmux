@@ -4,12 +4,12 @@
 확장 활성화 시 IPC 서버가 자동으로 시작되어야 하며(SHALL), 비활성화 시 정리되어야 한다(SHALL).
 
 #### Scenario: 확장 활성화 시 Unix socket 서버 시작 (macOS/Linux)
-- **WHEN** VS Code 확장이 활성화되고 OS가 macOS 또는 Linux이며 설정 `cmux.ipc.type`이 `unix`인 경우
-- **THEN** `${XDG_RUNTIME_DIR:-/tmp}/vscode-cmux-${workspaceHash}.sock` 경로에 Unix socket 서버가 생성되어야 한다
+- **WHEN** VS Code 확장이 활성화되고 OS가 macOS 또는 Linux이며 설정 `vmux.ipc.type`이 `unix`인 경우
+- **THEN** `${XDG_RUNTIME_DIR:-/tmp}/vmux-${workspaceHash}.sock` 경로에 Unix socket 서버가 생성되어야 한다
 - **THEN** 소켓 파일 권한은 0600이어야 한다
 
 #### Scenario: 확장 활성화 시 HTTP 서버 시작 (Windows 또는 설정)
-- **WHEN** OS가 Windows이거나 설정 `cmux.ipc.type`이 `http`인 경우
+- **WHEN** OS가 Windows이거나 설정 `vmux.ipc.type`이 `http`인 경우
 - **THEN** `http://127.0.0.1`에 ephemeral 포트로 HTTP 서버가 시작되어야 한다
 - **THEN** 외부 인터페이스에 바인딩되지 않아야 한다(MUST NOT)
 

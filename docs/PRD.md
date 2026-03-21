@@ -45,7 +45,7 @@ cmux의 핵심 기능을 VS Code 확장으로 구현하여, VS Code 내에서 �
 | Session Save/Restore | 레이아웃, CWD, 스크롤백 저장 | **중간** — CWD 복원 가능, 스크롤백은 API 제한 |
 | Built-in Browser | WebKit 기반 자동화 | **제외** — VS Code Simple Browser로 대체 |
 | GPU Terminal Rendering | libghostty 기반 | **제외** — VS Code xterm.js 사용 |
-| Environment Variables | CMUX_WORKSPACE_ID 등 자동 주입 | **높음** — Terminal env 옵션 |
+| Environment Variables | VMUX_WORKSPACE_ID 등 자동 주입 | **높음** — Terminal env 옵션 |
 
 ### 2.2 VS Code Terminal API 현황
 
@@ -85,7 +85,7 @@ cmux의 핵심 기능을 VS Code 확장으로 구현하여, VS Code 내에서 �
 에이전트가 사용자 주의가 필요할 때 알림을 보내는 시스템.
 
 **기능:**
-- CLI 명령 `vscode-cmux notify --title "Title" --body "Body"` 지원
+- CLI 명령 `vmux notify --title "Title" --body "Body"` 지원
 - VS Code 상태바에 미읽은 알림 배지 표시
 - 알림 TreeView 패널 (사이드바)
 - 알림 클릭 시 해당 터미널로 포커스 이동
@@ -105,7 +105,7 @@ named 터미널 세션 생성, 저장, 복원.
 - 워크스페이스별 터미널 레이아웃 프리셋 저장/복원
 - 터미널 이름, CWD, shell 경로, 환경 변수 설정
 - 터미널 그룹 (split) 저장/복원
-- `.vscode/cmux-sessions.json` 설정 파일
+- `.vscode/vmux-sessions.json` 설정 파일
 - 시작 시 자동 복원 옵션
 
 **구현:**
@@ -118,11 +118,11 @@ named 터미널 세션 생성, 저장, 복원.
 에이전트가 자신의 실행 컨텍스트를 알 수 있도록 환경 변수 자동 주입.
 
 **기능:**
-- `VSCODE_CMUX_TERMINAL_ID` — 터미널 식별자
-- `VSCODE_CMUX_WORKSPACE` — VS Code 워크스페이스 이름
-- `VSCODE_CMUX_SESSION` — 세션 이름
-- `VSCODE_CMUX_SOCKET` — IPC 소켓/포트 경로
-- `VSCODE_CMUX_CWD` — 초기 작업 디렉토리
+- `VMUX_TERMINAL_ID` — 터미널 식별자
+- `VMUX_WORKSPACE` — VS Code 워크스페이스 이름
+- `VMUX_SESSION` — 세션 이름
+- `VMUX_SOCKET` — IPC 소켓/포트 경로
+- `VMUX_CWD` — 초기 작업 디렉토리
 
 **구현:**
 - `TerminalOptions.env`로 자동 주입
@@ -139,9 +139,9 @@ named 터미널 세션 생성, 저장, 복원.
 - 진행률 바 (0.0~1.0)
 - 구조화된 로그 엔트리 (level: info/progress/success/warning/error)
 - CLI 명령으로 메타데이터 업데이트:
-  - `vscode-cmux set-status <key> <value> --icon <name> --color <hex>`
-  - `vscode-cmux set-progress 0.5 --label "Building..."`
-  - `vscode-cmux log "message" --level error`
+  - `vmux set-status <key> <value> --icon <name> --color <hex>`
+  - `vmux set-progress 0.5 --label "Building..."`
+  - `vmux log "message" --level error`
 
 **구현:**
 - Custom TreeView + Webview hybrid
@@ -180,7 +180,7 @@ named 터미널 세션 생성, 저장, 복원.
   - `notification.list` / `notification.clear`
   - `metadata.set` / `metadata.get` — 상태/진행률/로그
   - `session.save` / `session.restore`
-- 번들된 CLI 도구 (`vscode-cmux`)
+- 번들된 CLI 도구 (`vmux`)
 
 **구현:**
 - Node.js `http` 또는 `net` (Unix socket) 서버
@@ -207,7 +207,7 @@ named 터미널 세션 생성, 저장, 복원.
 MCP(Model Context Protocol)를 통해 AI 에이전트가 확장 기능에 접근.
 
 **기능:**
-- MCP 서버로 vscode-cmux 기능 노출
+- MCP 서버로 vmux 기능 노출
 - AI 에이전트가 MCP tool call로 터미널 제어
 - 지원 도구:
   - `create_terminal` / `list_terminals` / `send_command`
@@ -242,37 +242,37 @@ MCP(Model Context Protocol)를 통해 AI 에이전트가 확장 기능에 접근
   "contributes": {
     "viewsContainers": {
       "activitybar": [{
-        "id": "cmux",
-        "title": "cmux",
-        "icon": "resources/cmux-icon.svg"
+        "id": "vmux",
+        "title": "vmux",
+        "icon": "resources/vmux-icon.svg"
       }]
     },
     "views": {
-      "cmux": [
-        { "id": "cmux.notifications", "name": "Notifications" },
-        { "id": "cmux.terminals", "name": "Terminals" },
-        { "id": "cmux.sessions", "name": "Sessions" }
+      "vmux": [
+        { "id": "vmux.notifications", "name": "Notifications" },
+        { "id": "vmux.terminals", "name": "Terminals" },
+        { "id": "vmux.sessions", "name": "Sessions" }
       ]
     },
     "commands": [
-      { "command": "cmux.createTerminal", "title": "cmux: Create Terminal" },
-      { "command": "cmux.saveSession", "title": "cmux: Save Session" },
-      { "command": "cmux.restoreSession", "title": "cmux: Restore Session" },
-      { "command": "cmux.jumpToNotification", "title": "cmux: Jump to Latest Notification" },
-      { "command": "cmux.clearNotifications", "title": "cmux: Clear Notifications" },
-      { "command": "cmux.launchAgentGrid", "title": "cmux: Launch Agent Grid" }
+      { "command": "vmux.createTerminal", "title": "vmux: Create Terminal" },
+      { "command": "vmux.saveSession", "title": "vmux: Save Session" },
+      { "command": "vmux.restoreSession", "title": "vmux: Restore Session" },
+      { "command": "vmux.jumpToNotification", "title": "vmux: Jump to Latest Notification" },
+      { "command": "vmux.clearNotifications", "title": "vmux: Clear Notifications" },
+      { "command": "vmux.launchAgentGrid", "title": "vmux: Launch Agent Grid" }
     ],
     "keybindings": [
-      { "command": "cmux.jumpToNotification", "key": "cmd+shift+u", "mac": "cmd+shift+u" }
+      { "command": "vmux.jumpToNotification", "key": "cmd+shift+u", "mac": "cmd+shift+u" }
     ],
     "configuration": {
-      "title": "cmux",
+      "title": "vmux",
       "properties": {
-        "cmux.ipc.type": { "type": "string", "enum": ["unix", "http"], "default": "unix" },
-        "cmux.ipc.port": { "type": "number", "default": 0 },
-        "cmux.autoRestore": { "type": "boolean", "default": false },
-        "cmux.systemNotifications": { "type": "boolean", "default": true },
-        "cmux.envPrefix": { "type": "string", "default": "VSCODE_CMUX" }
+        "vmux.ipc.type": { "type": "string", "enum": ["unix", "http"], "default": "unix" },
+        "vmux.ipc.port": { "type": "number", "default": 0 },
+        "vmux.autoRestore": { "type": "boolean", "default": false },
+        "vmux.systemNotifications": { "type": "boolean", "default": true },
+        "vmux.envPrefix": { "type": "string", "default": "VMUX" }
       }
     }
   }
@@ -306,31 +306,31 @@ MCP(Model Context Protocol)를 통해 AI 에이전트가 확장 기능에 접근
 
 ### 6.1 명령어 체계
 
-cmux CLI와의 호환성을 고려하되, `vscode-cmux` prefix 사용.
+cmux CLI와의 호환성을 고려하되, `vmux` prefix 사용.
 
 ```bash
 # Notifications
-vscode-cmux notify --title "Claude Code" --body "Task complete"
-vscode-cmux notify --title "Build" --body "Failed" --level error
-vscode-cmux list-notifications [--json]
-vscode-cmux clear-notifications
+vmux notify --title "Claude Code" --body "Task complete"
+vmux notify --title "Build" --body "Failed" --level error
+vmux list-notifications [--json]
+vmux clear-notifications
 
 # Terminal Control
-vscode-cmux create-terminal --name "agent-1" --cwd /project
-vscode-cmux list-terminals [--json]
-vscode-cmux send --terminal "agent-1" "npm test"
-vscode-cmux focus --terminal "agent-1"
-vscode-cmux close --terminal "agent-1"
+vmux create-terminal --name "agent-1" --cwd /project
+vmux list-terminals [--json]
+vmux send --terminal "agent-1" "npm test"
+vmux focus --terminal "agent-1"
+vmux close --terminal "agent-1"
 
 # Metadata (Phase 2)
-vscode-cmux set-status <key> <value> --icon <name> --color <hex>
-vscode-cmux set-progress 0.75 --label "Testing..."
-vscode-cmux log "Build succeeded" --level success
+vmux set-status <key> <value> --icon <name> --color <hex>
+vmux set-progress 0.75 --label "Testing..."
+vmux log "Build succeeded" --level success
 
 # Sessions
-vscode-cmux save-session --name "dev-setup"
-vscode-cmux restore-session --name "dev-setup"
-vscode-cmux list-sessions
+vmux save-session --name "dev-setup"
+vmux restore-session --name "dev-setup"
+vmux list-sessions
 ```
 
 ### 6.2 Agent Hook Examples
@@ -343,7 +343,7 @@ vscode-cmux list-sessions
       "matcher": "idle_prompt",
       "hooks": [{
         "type": "command",
-        "command": "vscode-cmux notify --title 'Claude Code' --body 'Waiting for input'"
+        "command": "vmux notify --title 'Claude Code' --body 'Waiting for input'"
       }]
     }]
   }
@@ -352,7 +352,7 @@ vscode-cmux list-sessions
 
 **Codex** (`~/.codex/config.toml`):
 ```toml
-notify = ["bash", "-c", "vscode-cmux notify --title Codex --body 'Done'"]
+notify = ["bash", "-c", "vmux notify --title Codex --body 'Done'"]
 ```
 
 ---
@@ -361,7 +361,7 @@ notify = ["bash", "-c", "vscode-cmux notify --title Codex --body 'Done'"]
 
 ### 7.1 cmux CLI Compatibility Layer
 
-cmux가 설치되어 있지 않은 환경에서 `cmux` 명령을 `vscode-cmux`로 fallback하는 shim 제공 (선택적).
+cmux가 설치되어 있지 않은 환경에서 `cmux` 명령을 `vmux`로 fallback하는 shim 제공 (선택적).
 
 ### 7.2 Platform Support
 

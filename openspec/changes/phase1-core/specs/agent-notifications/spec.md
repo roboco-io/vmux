@@ -80,10 +80,10 @@ IPC를 통해 수신된 알림은 인메모리에 저장되어야 한다(SHALL).
 새 알림 수신 시 OS 시스템 알림을 표시할 수 있어야 한다(SHALL).
 
 #### Scenario: 시스템 알림 활성화 상태
-- **WHEN** 새 알림이 수신되고 설정 `cmux.systemNotifications`가 `true`일 때
+- **WHEN** 새 알림이 수신되고 설정 `vmux.systemNotifications`가 `true`일 때
 - **THEN** `vscode.window.showInformationMessage()` (또는 level에 따라 warning/error)가 호출되어야 한다
 
 #### Scenario: 시스템 알림 비활성화 상태
-- **WHEN** 새 알림이 수신되고 설정 `cmux.systemNotifications`가 `false`일 때
+- **WHEN** 새 알림이 수신되고 설정 `vmux.systemNotifications`가 `false`일 때
 - **THEN** VS Code 메시지 팝업이 표시되지 않아야 한다(MUST NOT)
 - **THEN** TreeView와 StatusBar는 정상 업데이트되어야 한다

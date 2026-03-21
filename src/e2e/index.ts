@@ -21,7 +21,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getSocketAddress(): string {
-  const addr = process.env['VSCODE_CMUX_SOCKET'];
+  const addr = process.env['VMUX_SOCKET'];
   if (addr) return addr;
   // Fallback: discover from /tmp
   const fs = require('node:fs');
@@ -29,7 +29,7 @@ function getSocketAddress(): string {
   const path = require('node:path');
   const tmpDir = process.env['XDG_RUNTIME_DIR'] ?? os.tmpdir();
   const files = fs.readdirSync(tmpDir)
-    .filter((f: string) => f.startsWith('vscode-cmux-') && f.endsWith('.sock'))
+    .filter((f: string) => f.startsWith('vmux-') && f.endsWith('.sock'))
     .map((f: string) => ({
       path: path.join(tmpDir, f),
       mtime: fs.statSync(path.join(tmpDir, f)).mtimeMs,
@@ -124,8 +124,8 @@ async function testNotificationSystem(address: string): Promise<void> {
 
   // Verify commands are registered
   const commands = await vscode.commands.getCommands(true);
-  assert.ok(commands.includes('cmux.jumpToNotification'), 'jumpToNotification command should exist');
-  assert.ok(commands.includes('cmux.clearNotifications'), 'clearNotifications command should exist');
+  assert.ok(commands.includes('vmux.jumpToNotification'), 'jumpToNotification command should exist');
+  assert.ok(commands.includes('vmux.clearNotifications'), 'clearNotifications command should exist');
 
   console.log('  [8.2] ✓ Notification system tests passed');
 }
@@ -170,8 +170,8 @@ async function testSessionManagement(address: string): Promise<void> {
 
   // Verify commands are registered
   const commands = await vscode.commands.getCommands(true);
-  assert.ok(commands.includes('cmux.saveSession'), 'saveSession command should exist');
-  assert.ok(commands.includes('cmux.restoreSession'), 'restoreSession command should exist');
+  assert.ok(commands.includes('vmux.saveSession'), 'saveSession command should exist');
+  assert.ok(commands.includes('vmux.restoreSession'), 'restoreSession command should exist');
 
   console.log('  [8.3] ✓ Session management tests passed');
 }
@@ -200,7 +200,7 @@ async function testEnvInjection(address: string): Promise<void> {
   assert.equal(found!.isActive, true);
 
   // Test terminal.send
-  await rpcCall(address, 'terminal.send', { name: 'e2e-env-test', text: 'echo $VSCODE_CMUX_SOCKET' });
+  await rpcCall(address, 'terminal.send', { name: 'e2e-env-test', text: 'echo $VMUX_SOCKET' });
   await sleep(200);
 
   // Test terminal.focus
@@ -208,7 +208,7 @@ async function testEnvInjection(address: string): Promise<void> {
 
   // Verify TerminalProfileProvider is registered
   const commands = await vscode.commands.getCommands(true);
-  assert.ok(commands.includes('cmux.createTerminal'), 'createTerminal command should exist');
+  assert.ok(commands.includes('vmux.createTerminal'), 'createTerminal command should exist');
 
   // Cleanup
   await rpcCall(address, 'terminal.close', { name: 'e2e-env-test' });

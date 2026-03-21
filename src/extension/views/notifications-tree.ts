@@ -32,7 +32,7 @@ export class NotificationsTreeDataProvider implements vscode.TreeDataProvider<No
 
     // Click command
     item.command = {
-      command: 'cmux.onNotificationClick',
+      command: 'vmux.onNotificationClick',
       title: 'Open Notification',
       arguments: [element],
     };

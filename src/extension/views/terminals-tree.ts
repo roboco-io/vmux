@@ -18,7 +18,7 @@ export class TerminalsTreeDataProvider implements vscode.TreeDataProvider<Termin
     item.iconPath = new vscode.ThemeIcon(element.isActive ? 'terminal' : 'circle-slash');
 
     item.command = {
-      command: 'cmux.onTerminalClick',
+      command: 'vmux.onTerminalClick',
       title: 'Focus Terminal',
       arguments: [element],
     };

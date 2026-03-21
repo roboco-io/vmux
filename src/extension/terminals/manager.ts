@@ -28,8 +28,8 @@ export class TerminalManager {
 
   create(name: string, cwd?: string, env?: Record<string, string>, shellPath?: string): TerminalInfo {
     const id = `${name}-${Date.now()}`;
-    const cmuxEnv = this.envBuilder(id);
-    const mergedEnv = { ...cmuxEnv, ...env };
+    const vmuxEnv = this.envBuilder(id);
+    const mergedEnv = { ...vmuxEnv, ...env };
 
     const terminal = vscode.window.createTerminal({
       name,

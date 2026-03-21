@@ -10,14 +10,14 @@
       "matcher": "idle_prompt",
       "hooks": [{
         "type": "command",
-        "command": "vscode-cmux notify --title 'Claude Code' --body 'Waiting for input'"
+        "command": "vmux notify --title 'Claude Code' --body 'Waiting for input'"
       }]
     }],
     "Stop": [{
       "matcher": "",
       "hooks": [{
         "type": "command",
-        "command": "vscode-cmux notify --title 'Claude Code' --body 'Task complete' --level info"
+        "command": "vmux notify --title 'Claude Code' --body 'Task complete' --level info"
       }]
     }]
   }
@@ -28,7 +28,7 @@
 
 `~/.codex/config.toml`:
 ```toml
-notify = ["bash", "-c", "vscode-cmux notify --title Codex --body 'Done'"]
+notify = ["bash", "-c", "vmux notify --title Codex --body 'Done'"]
 ```
 
 ## Gemini CLI
@@ -37,7 +37,7 @@ notify = ["bash", "-c", "vscode-cmux notify --title Codex --body 'Done'"]
 ```json
 {
   "hooks": {
-    "on_complete": "vscode-cmux notify --title 'Gemini CLI' --body 'Task finished'"
+    "on_complete": "vmux notify --title 'Gemini CLI' --body 'Task finished'"
   }
 }
 ```
@@ -47,23 +47,23 @@ notify = ["bash", "-c", "vscode-cmux notify --title Codex --body 'Done'"]
 Any agent or script can send notifications:
 ```bash
 # Simple notification
-vscode-cmux notify --title "Build" --body "Complete"
+vmux notify --title "Build" --body "Complete"
 
 # Error notification
-vscode-cmux notify --title "Test" --body "3 tests failed" --level error
+vmux notify --title "Test" --body "3 tests failed" --level error
 
 # After long-running command
-npm test && vscode-cmux notify --title "Tests" --body "All passed" \
-         || vscode-cmux notify --title "Tests" --body "Failed" --level error
+npm test && vmux notify --title "Tests" --body "All passed" \
+         || vmux notify --title "Tests" --body "Failed" --level error
 ```
 
 ## Setup
 
 1. Install the vmux VS Code extension
-2. Ensure `vscode-cmux` is in your PATH:
+2. Ensure `vmux` is in your PATH:
    ```bash
    npm install -g vmux
    # or the extension bundles it at: ~/.vscode/extensions/roboco-io.vmux-*/dist/cli.js
    ```
-3. Open a terminal in VS Code — the extension auto-injects `VSCODE_CMUX_SOCKET`
+3. Open a terminal in VS Code — the extension auto-injects `VMUX_SOCKET`
 4. Configure your agent's hook as shown above
