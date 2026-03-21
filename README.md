@@ -1,68 +1,87 @@
 # vmux — Agent-Friendly Terminal Extension for VS Code
 
-[English](README.md) | [Korean](README.ko.md) | [Japanese](README.ja.md)
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/roboco-io.vmux)](https://marketplace.visualstudio.com/items?itemName=roboco-io.vmux)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+[English](README.md) | [한국어](README.ko.md) | [日本語](README.ja.md)
 
 VS Code terminal extension for AI coding agents such as Claude Code, Codex, and Gemini CLI.
-It lets agents send notifications, manage sessions, and understand their execution context directly from the terminal.
+Agents can send notifications, manage sessions, display metadata, and orchestrate multi-terminal workflows — all from the terminal.
 
 > Inspired by [cmux](https://github.com/manaflow-ai/cmux), a native agent terminal for macOS.
 
-## Features
-
-### Phase 1: Core (implemented)
-- **Agent Notification System** — Send notifications when an agent needs user attention (Status Bar badge + Tree View + system notifications)
-- **Terminal Session Management** — Create, save, and restore named terminal sessions, including split groups
-- **Environment Context Injection** — Automatically inject `VMUX_*` environment variables
-- **IPC Server** — JSON-RPC 2.0 over Unix socket (macOS/Linux) with HTTP fallback (Windows)
-- **CLI Tool** — Control the extension externally with the `vmux` command
-
-### Phase 2: Metadata & Monitoring (implemented)
-- **Sidebar Metadata Panel** — Per-terminal status pills, progress bars, and structured logs (`vmux set-status`, `set-progress`, `log`)
-- **Terminal Activity Monitor** — Track active/idle state, last command time, CWD, and exit codes through the Shell Integration API
-
-### Phase 3: Programmable Control (implemented)
-- **Multi-Agent Orchestration** — Agent grid layouts (`vmux launch-grid`), command broadcast (`vmux broadcast`), and launch templates
-- **MCP Server Integration** — 17 MCP tools so AI agents can control terminals, notifications, sessions, metadata, and grids
-
-## Architecture
-
-![Architecture Overview](docs/images/architecture.png)
-
-> Source draw.io file: [`docs/diagrams/architecture.drawio`](docs/diagrams/architecture.drawio)
-
-## Quick Start
-
-### 1. Install
+## Install
 
 ```bash
-# Development mode: press F5 in VS Code to launch an Extension Development Host
-# Or install the VSIX directly
-code --install-extension vmux-0.1.0.vsix
+# From VS Code Marketplace
+code --install-extension roboco-io.vmux
+
+# Or search "vmux" in the VS Code Extensions panel
 ```
 
-### 2. Use the CLI
+## Features
 
-From a VS Code terminal, where the extension auto-injects `VMUX_SOCKET`:
+### Notifications
+Send notifications from agents to VS Code — Status Bar badge, sidebar TreeView, and system popups.
 
 ```bash
-# Send notifications
 vmux notify --title "Claude Code" --body "Task complete"
 vmux notify --title "Build" --body "Failed" --level error
+```
 
-# Control terminals
+### Terminal Control
+Create, focus, send commands to, and close terminals programmatically.
+
+```bash
 vmux create-terminal --name "agent-1" --cwd /project
-vmux list-terminals --json
 vmux send --terminal "agent-1" "npm test"
 vmux focus --terminal "agent-1"
 vmux close --terminal "agent-1"
-
-# Manage sessions
-vmux save-session --name "dev-setup"
-vmux restore-session --name "dev-setup"
-vmux list-sessions --json
 ```
 
-### 3. Configure agent hooks
+### Session Management
+Save and restore named terminal layouts, including split groups.
+
+```bash
+vmux save-session --name "dev-setup"
+vmux restore-session --name "dev-setup"
+```
+
+### Metadata Panel
+Display per-terminal status pills, progress bars, and structured logs in the sidebar.
+
+```bash
+vmux set-status build passing --icon check
+vmux set-progress 0.75 --label "Testing..."
+vmux log "All tests passed" --level success
+```
+
+### Multi-Agent Grid
+Launch NxM split terminal grids and broadcast commands to all of them.
+
+```bash
+vmux launch-grid --name agents --rows 2 --cols 2
+vmux broadcast --grid agents "git pull && npm test"
+```
+
+### MCP Server
+17 MCP tools let AI agents control vmux via the Model Context Protocol.
+
+```json
+{
+  "mcpServers": {
+    "vmux": {
+      "command": "node",
+      "args": ["/path/to/vmux/dist/mcp.js"],
+      "env": { "VMUX_SOCKET": "<socket path>" }
+    }
+  }
+}
+```
+
+Tools: `create_terminal`, `send_command`, `create_notification`, `set_status`, `set_progress`, `add_log`, `save_session`, `restore_session`, `launch_agent_grid`, `broadcast_to_grid`, and more.
+
+## Agent Hook Examples
 
 **Claude Code** (`~/.claude/settings.json`):
 ```json
@@ -86,44 +105,44 @@ notify = ["bash", "-c", "vmux notify --title Codex --body 'Done'"]
 
 More examples: [docs/agent-hooks.md](docs/agent-hooks.md)
 
-## Keyboard Shortcut
+## Keyboard Shortcuts
 
 | Shortcut | Description |
 |----------|-------------|
+| `Cmd+T` (macOS) / `Ctrl+T` | Create a new vmux terminal |
 | `Cmd+Shift+U` (macOS) / `Ctrl+Shift+U` | Jump to the latest unread notification |
+
+## Architecture
+
+![Architecture Overview](docs/images/architecture.png)
 
 ## Platform Support
 
 | Platform | IPC |
 |----------|-----|
-| macOS | Unix socket (full) |
-| Linux | Unix socket (full) |
+| macOS | Unix socket |
+| Linux | Unix socket |
 | Windows | HTTP fallback |
 
-**VS Code**: minimum 1.99, recommended 1.105+
+**VS Code**: 1.99+
 
 ## Development
 
 ```bash
 npm install          # Install dependencies
-npm run build        # Build the extension, CLI, and MCP server
-npm run watch        # Rebuild automatically on change
-npm test             # Run unit and integration tests
-npm run test:e2e     # Run E2E tests in the VS Code Extension Host
-npm run compile      # Type-check with TypeScript
-npm run package      # Build the .vsix package
+npm run build        # Build extension + CLI + MCP server
+npm run watch        # Rebuild on change
+npm test             # Unit and integration tests (24 tests)
+npm run test:e2e     # E2E tests in VS Code Extension Host (7 tests)
+npm run compile      # TypeScript type-check
+npm run package      # Build .vsix package
 ```
-
-## Tech Stack
-
-TypeScript, esbuild, JSON-RPC 2.0, the VS Code Extension API (TreeView, StatusBar, Terminal), and Node.js `net`/`http`
 
 ## Documentation
 
-- [PRD](docs/PRD.md) — Product Requirements Document
-- [Agent Hook Examples](docs/agent-hooks.md) — Setup guide for Claude Code, Codex, and Gemini CLI
-- [MCP Demo Scenario](docs/demo-scenario.md) — Example workflows driven by the vmux MCP tools
-- [OpenSpec Design](openspec/changes/phase1-core/) — Proposal, design, specs, and task checklist
+- [Agent Hook Examples](docs/agent-hooks.md)
+- [MCP Demo Scenarios](docs/demo-scenario.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## License
 
