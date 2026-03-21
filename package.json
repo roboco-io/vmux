@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/roboco-io/tools"
+    "url": "https://github.com/roboco-io/vmux"
   },
   "engines": {
     "vscode": "^1.99.0"
