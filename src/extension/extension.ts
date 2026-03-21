@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { createMethodRouter, type IpcServer } from './ipc/server.js';
 import { UnixSocketServer } from './ipc/unix-socket-server.js';
 import { HttpServer } from './ipc/http-server.js';
@@ -105,10 +107,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // ─── Activity Monitor ─────────────────────────────────────────
   activityMonitor.registerEvents(context);
 
+  // ─── CLI PATH injection ─────────────────────────────────────
+  const binDir = path.join(context.extensionPath, 'bin');
+  const cliSource = path.join(context.extensionPath, 'dist', 'cli.js');
+  const cliLink = path.join(binDir, 'vmux');
+
+  try {
+    if (!fs.existsSync(binDir)) fs.mkdirSync(binDir, { recursive: true });
+    if (!fs.existsSync(cliLink) && fs.existsSync(cliSource)) {
+      fs.symlinkSync(cliSource, cliLink);
+      fs.chmodSync(cliSource, 0o755);
+    }
+  } catch {
+    // Best effort — symlink may fail on some platforms
+  }
+
   // ─── Global env injection (all terminals) ────────────────────
   const envCollection = context.environmentVariableCollection;
   envCollection.persistent = true;
   envCollection.description = 'vmux terminal context';
+
+  envCollection.prepend('PATH', binDir + path.delimiter);
 
   const globalEnv = buildEnv(`vmux-${Date.now()}`);
   for (const [key, value] of Object.entries(globalEnv)) {
