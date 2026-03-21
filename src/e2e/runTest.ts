@@ -6,10 +6,14 @@ async function main(): Promise<void> {
     const extensionDevelopmentPath = path.resolve(__dirname, '../../');
     const extensionTestsPath = path.resolve(__dirname, './index.js');
 
+    // Use the project root as workspace so SessionManager can write .vscode/
+    const workspacePath = extensionDevelopmentPath;
+
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
+        workspacePath,
         '--disable-extensions',
         '--disable-gpu',
       ],
