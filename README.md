@@ -14,13 +14,13 @@ AI 코딩 에이전트(Claude Code, Codex, Gemini CLI 등)를 위한 VS Code 터
 - **IPC Server** — JSON-RPC 2.0 over Unix socket (macOS/Linux) + HTTP fallback (Windows)
 - **CLI Tool** — `vmux` 명령으로 외부에서 확장 제어
 
-### Phase 2: Metadata & Monitoring (예정)
-- Sidebar Metadata Panel — 터미널별 상태, 진행률, 로그 표시
-- Terminal Activity Monitor — 에이전트 실행 상태 실시간 모니터링
+### Phase 2: Metadata & Monitoring (구현 완료)
+- **Sidebar Metadata Panel** — 터미널별 상태 pill, 진행률 바, 구조화된 로그 (`vmux set-status`, `set-progress`, `log`)
+- **Terminal Activity Monitor** — Shell Integration API로 active/idle 상태, 마지막 명령 시간, CWD, 종료 코드 추적
 
 ### Phase 3: Programmable Control (예정)
-- Multi-Agent Orchestration — 에이전트 그리드, 브로드캐스트
-- MCP Server Integration — AI 에이전트가 MCP tool call로 터미널 제어
+- **Multi-Agent Orchestration** — 에이전트 그리드 레이아웃, 명령 브로드캐스트, 에이전트 실행 템플릿
+- **MCP Server Integration** — AI 에이전트가 MCP tool call로 터미널/알림/세션 제어
 
 ## Architecture
 
