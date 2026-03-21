@@ -91,6 +91,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.window.onDidCloseTerminal((t) => terminalMgr.onDidCloseTerminal(t)),
   );
 
+  // ─── Global env injection (all terminals) ────────────────────
+  const envCollection = context.environmentVariableCollection;
+  envCollection.persistent = true;
+  envCollection.description = 'vmux terminal context';
+
+  const globalEnv = buildEnv(`vmux-${Date.now()}`);
+  for (const [key, value] of Object.entries(globalEnv)) {
+    envCollection.replace(key, value);
+  }
+
   // ─── TerminalProfileProvider ─────────────────────────────────
   context.subscriptions.push(
     vscode.window.registerTerminalProfileProvider('vmux.terminalProfile', {
