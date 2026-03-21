@@ -1,0 +1,187 @@
+<mxfile host="Claude Code" agent="Claude Code" version="1.0">
+  <diagram id="arch-overview" name="Architecture Overview">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- VS Code Container -->
+        <mxCell id="vscode-box" value="VS Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6c8ebf;strokeWidth=2;fontSize=16;fontStyle=1;verticalAlign=top;spacingTop=5;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="20" width="1000" height="570" as="geometry"/>
+        </mxCell>
+
+        <!-- Sidebar (Activity Bar) -->
+        <mxCell id="sidebar-box" value="Sidebar (Activity Bar)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;strokeWidth=1;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="50" y="55" width="180" height="270" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="notify-view" value="Notifications&#xa;TreeView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="65" y="85" width="150" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="metadata-view" value="Metadata&#xa;Panel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="65" y="143" width="150" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="terminals-view" value="Terminals&#xa;TreeView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="65" y="201" width="150" height="48" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="sessions-view" value="Sessions&#xa;TreeView" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="65" y="259" width="150" height="48" as="geometry"/>
+        </mxCell>
+
+        <!-- StatusBar (between Sidebar and Extension Host) -->
+        <mxCell id="statusbar" value="StatusBar&#xa;(Notification Badge)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="65" y="340" width="150" height="38" as="geometry"/>
+        </mxCell>
+
+        <!-- Terminal Panel -->
+        <mxCell id="terminal-box" value="Terminal Panel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#82b366;strokeWidth=1;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="280" y="55" width="350" height="215" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="term1" value="Terminal 1&#xa;(Claude Code)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="295" y="87" width="153" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="term2" value="Terminal 2&#xa;(Codex)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="463" y="87" width="153" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="term3" value="Terminal 3&#xa;(Shell)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="295" y="180" width="153" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="term4" value="Terminal 4&#xa;(Build)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="463" y="180" width="153" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Shell Integration (right of Terminal Panel) -->
+        <mxCell id="shell-int" value="Shell Integration API&#xa;(executeCommand + read)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="87" width="210" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Env Vars (right of Terminal Panel) -->
+        <mxCell id="env-vars" value="Env Context&#xa;VSCODE_CMUX_*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="180" width="210" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- Extension Host (full-width band, two rows: managers + IPC) -->
+        <mxCell id="ext-host-box" value="Extension Host" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#9673a6;strokeWidth=1;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="50" y="400" width="960" height="180" as="geometry"/>
+        </mxCell>
+
+        <!-- Manager row (aligned with their UI targets above) -->
+        <mxCell id="notif-mgr" value="Notification&#xa;Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="425" width="145" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="session-mgr" value="Session&#xa;Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="425" width="145" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="terminal-mgr" value="Terminal&#xa;Manager" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="595" y="425" width="145" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- IPC Server row (central hub, below managers) -->
+        <mxCell id="ipc-server" value="IPC Server&#xa;(Unix Socket + HTTP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="510" width="170" height="55" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== External Components ==================== -->
+
+        <!-- CLI Tool -->
+        <mxCell id="cli-tool" value="CLI Tool&#xa;(vscode-cmux)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="640" width="180" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- MCP Server -->
+        <mxCell id="mcp-server" value="MCP Server&#xa;(optional)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="640" width="180" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- Agent Hooks -->
+        <mxCell id="agent-hooks" value="Agent Hooks&#xa;(Claude, Codex,&#xa;Gemini CLI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="740" width="180" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Agent -->
+        <mxCell id="ai-agent" value="AI Agent&#xa;(MCP Client)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="500" y="740" width="180" height="65" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== Edges ==================== -->
+
+        <!-- e1: CLI Tool → IPC Server (JSON-RPC) — enters IPC bottom-left -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#b85450;strokeWidth=2;exitX=0.5;exitY=0;entryX=0.25;entryY=1;" edge="1" source="cli-tool" target="ipc-server" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1-label" value="JSON-RPC" style="edgeLabel;html=1;fontSize=10;fillColor=none;" vertex="1" connectable="0" parent="e1">
+          <mxGeometry x="0.3" relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e2: MCP Server → IPC Server (JSON-RPC) — enters IPC bottom-right -->
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#b85450;strokeWidth=2;exitX=0.5;exitY=0;entryX=0.75;entryY=1;" edge="1" source="mcp-server" target="ipc-server" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2-label" value="JSON-RPC" style="edgeLabel;html=1;fontSize=10;fillColor=none;" vertex="1" connectable="0" parent="e2">
+          <mxGeometry x="0.3" relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e3: Agent Hooks → CLI Tool (exec) — straight up -->
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#666666;strokeWidth=1;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" source="agent-hooks" target="cli-tool" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3-label" value="exec" style="edgeLabel;html=1;fontSize=10;fillColor=none;" vertex="1" connectable="0" parent="e3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e4: AI Agent → MCP Server (MCP tool call) — straight up -->
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#666666;strokeWidth=1;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" source="ai-agent" target="mcp-server" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4-label" value="MCP tool call" style="edgeLabel;html=1;fontSize=10;fillColor=none;" vertex="1" connectable="0" parent="e4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e5: IPC Server → Notification Manager — exits IPC top-left, fans left -->
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#9673a6;exitX=0.25;exitY=0;entryX=0.5;entryY=1;" edge="1" source="ipc-server" target="notif-mgr" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e6: IPC Server → Session Manager — exits IPC top-center, straight up -->
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#9673a6;exitX=0.5;exitY=0;entryX=0.5;entryY=1;" edge="1" source="ipc-server" target="session-mgr" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e7: IPC Server → Terminal Manager — exits IPC top-right, fans right -->
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#9673a6;exitX=0.75;exitY=0;entryX=0.5;entryY=1;" edge="1" source="ipc-server" target="terminal-mgr" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e8: Notification Manager → Notifications TreeView — nearly vertical up (both on left) -->
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;strokeColor=#6c8ebf;exitX=0.35;exitY=0;entryX=0.6;entryY=1;" edge="1" source="notif-mgr" target="notify-view" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e9: Notification Manager → StatusBar — short hop up (both on left) -->
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;strokeColor=#6c8ebf;exitX=0.7;exitY=0;entryX=0.6;entryY=1;" edge="1" source="notif-mgr" target="statusbar" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e10: Terminal Manager → Term4 — up to nearest terminal (clean vertical) -->
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;strokeColor=#82b366;exitX=0.3;exitY=0;entryX=0.8;entryY=1;" edge="1" source="terminal-mgr" target="term4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- e11: Shell Integration → Term2 — short horizontal left -->
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;strokeColor=#d6b656;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" source="shell-int" target="term2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
