@@ -1,0 +1,106 @@
+{
+  "name": "vmux",
+  "displayName": "vmux — Agent-Friendly Terminal",
+  "description": "AI 코딩 에이전트를 위한 터미널 확장. 알림, 세션 관리, 환경 컨텍스트 주입.",
+  "version": "0.1.0",
+  "publisher": "roboco-io",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/roboco-io/tools"
+  },
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "bin": {
+    "vscode-cmux": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "npm run build:ext && npm run build:cli",
+    "build:ext": "esbuild src/extension/extension.ts --bundle --outfile=dist/extension.js --platform=node --format=cjs --external:vscode --sourcemap",
+    "build:cli": "node scripts/build-cli.js",
+    "watch": "concurrently \"npm run build:ext -- --watch\" \"npm run build:cli -- --watch\"",
+    "lint": "eslint src/",
+    "test": "node --test dist/test/**/*.test.js",
+    "test:e2e": "vscode-test",
+    "package": "vsce package",
+    "compile": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.99.0",
+    "@vscode/test-electron": "^2.4.0",
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0",
+    "concurrently": "^9.0.0"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cmux",
+          "title": "cmux",
+          "icon": "resources/cmux-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "cmux": [
+        { "id": "cmux.notifications", "name": "Notifications" },
+        { "id": "cmux.terminals", "name": "Terminals" },
+        { "id": "cmux.sessions", "name": "Sessions" }
+      ]
+    },
+    "commands": [
+      { "command": "cmux.createTerminal", "title": "cmux: Create Terminal" },
+      { "command": "cmux.saveSession", "title": "cmux: Save Session" },
+      { "command": "cmux.restoreSession", "title": "cmux: Restore Session" },
+      { "command": "cmux.jumpToNotification", "title": "cmux: Jump to Latest Notification" },
+      { "command": "cmux.clearNotifications", "title": "cmux: Clear Notifications" }
+    ],
+    "keybindings": [
+      {
+        "command": "cmux.jumpToNotification",
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u"
+      }
+    ],
+    "configuration": {
+      "title": "cmux",
+      "properties": {
+        "cmux.ipc.type": {
+          "type": "string",
+          "enum": ["unix", "http"],
+          "default": "unix",
+          "description": "IPC transport type (unix socket or HTTP)"
+        },
+        "cmux.ipc.port": {
+          "type": "number",
+          "default": 0,
+          "description": "HTTP port (0 = auto-assign)"
+        },
+        "cmux.autoRestore": {
+          "type": "boolean",
+          "default": false,
+          "description": "Restore last terminal session on workspace open"
+        },
+        "cmux.systemNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show VS Code notification popups for agent notifications"
+        },
+        "cmux.envPrefix": {
+          "type": "string",
+          "default": "VSCODE_CMUX",
+          "description": "Environment variable prefix for terminal injection"
+        }
+      }
+    }
+  }
+}

@@ -21,7 +21,7 @@ AI 코딩 에이전트(Claude Code, Codex, Gemini CLI 등)를 위한 VS Code 터
 
 ## Architecture
 
-![Architecture Overview](docs/images/architecture.svg)
+![Architecture Overview](docs/images/architecture.png)
 
 > 원본 draw.io 파일: [`docs/diagrams/architecture.drawio`](docs/diagrams/architecture.drawio)
 

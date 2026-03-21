@@ -1,0 +1,14 @@
+.vscode/**
+.vscode-test/**
+src/**
+scripts/**
+node_modules/**
+.omc/**
+.claude/**
+.codex/**
+openspec/**
+docs/**
+*.vsix
+.gitignore
+tsconfig.json
+eslint.config.*
