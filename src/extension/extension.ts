@@ -16,6 +16,11 @@ import { MetadataTreeDataProvider } from './views/metadata-tree.js';
 import { ActivityMonitor } from './terminals/activity-monitor.js';
 import { AgentGrid } from './terminals/agent-grid.js';
 import { AgentPresetManager } from './terminals/agent-presets.js';
+import { TabGroupManager } from './tabgroups/manager.js';
+import { TabGroupsTreeDataProvider } from './views/tabgroups-tree.js';
+import { ClaudeHookManager } from './agents/claude-hook-manager.js';
+import { CodexHookManager } from './agents/codex-hook-manager.js';
+import { BasicAgentManager } from './agents/basic-agent-manager.js';
 
 let ipcServer: IpcServer | null = null;
 
@@ -46,9 +51,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // ─── Env Builder ─────────────────────────────────────────────
   const envPrefix = config.get<string>('envPrefix', 'VMUX');
-  function buildEnv(terminalId: string): Record<string, string> {
+  function buildSharedEnv(): Record<string, string> {
     return {
-      [`${envPrefix}_TERMINAL_ID`]: terminalId,
       [`${envPrefix}_WORKSPACE`]: vscode.workspace.name ?? '',
       [`${envPrefix}_SESSION`]: '',
       [`${envPrefix}_SOCKET`]: ipcAddress,
@@ -56,26 +60,41 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     };
   }
 
+  function buildManagedEnv(terminalId: string, terminalName = terminalId): Record<string, string> {
+    return {
+      ...buildSharedEnv(),
+      [`${envPrefix}_MANAGED`]: '1',
+      [`${envPrefix}_TERMINAL_ID`]: terminalId,
+      [`${envPrefix}_TERMINAL_NAME`]: terminalName,
+    };
+  }
+
   // ─── Managers ────────────────────────────────────────────────
   const notificationMgr = new NotificationManager();
   const sessionMgr = new SessionManager();
-  const terminalMgr = new TerminalManager(buildEnv);
+  const terminalMgr = new TerminalManager(buildManagedEnv);
   const metadataMgr = new MetadataManager();
   const activityMonitor = new ActivityMonitor();
-  const agentGrid = new AgentGrid(buildEnv);
+  const agentGrid = new AgentGrid(buildManagedEnv);
   const agentPresets = new AgentPresetManager();
+  const tabGroupMgr = new TabGroupManager();
+  const claudeHookMgr = new ClaudeHookManager(notificationMgr, metadataMgr);
+  const codexHookMgr = new CodexHookManager(notificationMgr, metadataMgr);
+  const basicAgentMgr = new BasicAgentManager(notificationMgr, metadataMgr);
 
   // ─── TreeViews ───────────────────────────────────────────────
   const notifTree = new NotificationsTreeDataProvider(notificationMgr);
   const sessionsTree = new SessionsTreeDataProvider(sessionMgr);
-  const terminalsTree = new TerminalsTreeDataProvider(terminalMgr);
+  const terminalsTree = new TerminalsTreeDataProvider(terminalMgr, activityMonitor);
   const metadataTree = new MetadataTreeDataProvider(metadataMgr);
+  const tabGroupsTree = new TabGroupsTreeDataProvider(tabGroupMgr);
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider('vmux.notifications', notifTree),
     vscode.window.registerTreeDataProvider('vmux.sessions', sessionsTree),
     vscode.window.registerTreeDataProvider('vmux.terminals', terminalsTree),
     vscode.window.registerTreeDataProvider('vmux.metadata', metadataTree),
+    vscode.window.registerTreeDataProvider('vmux.tabgroups', tabGroupsTree),
   );
 
   // Wire change events → refresh TreeViews
@@ -84,6 +103,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   terminalMgr.onDidChange = () => terminalsTree.refresh();
   metadataMgr.onDidChange = () => metadataTree.refresh();
   activityMonitor.onDidChange = () => terminalsTree.refresh();
+  tabGroupMgr.onDidChange = () => tabGroupsTree.refresh();
 
   // ─── StatusBar ───────────────────────────────────────────────
   const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -122,6 +142,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       fs.symlinkSync(cliSource, cliLink);
       fs.chmodSync(cliSource, 0o755);
     }
+    for (const wrapper of ['claude', 'codex', 'gemini']) {
+      const wrapperPath = path.join(binDir, wrapper);
+      if (fs.existsSync(wrapperPath)) {
+        fs.chmodSync(wrapperPath, 0o755);
+      }
+    }
   } catch {
     // Best effort — symlink may fail on some platforms
   }
@@ -133,7 +159,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   envCollection.prepend('PATH', binDir + path.delimiter);
 
-  const globalEnv = buildEnv(`vmux-${Date.now()}`);
+  const globalEnv = buildSharedEnv();
   for (const [key, value] of Object.entries(globalEnv)) {
     envCollection.replace(key, value);
   }
@@ -145,7 +171,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         const id = `vmux-${Date.now()}`;
         return new vscode.TerminalProfile({
           name: 'vmux',
-          env: buildEnv(id),
+          env: buildManagedEnv(id, 'vmux'),
         });
       },
     }),
@@ -235,11 +261,78 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       agentGrid.create({ name, rows, cols });
       vscode.window.showInformationMessage(`vmux: ${rows}x${cols} agent grid "${name}" created`);
     }),
+
+    // ── Tab Group Commands ──
+    vscode.commands.registerCommand('vmux.createTabGroup', async () => {
+      const name = await vscode.window.showInputBox({ prompt: 'Tab group name' });
+      if (name) {
+        tabGroupMgr.create(name);
+        vscode.window.showInformationMessage(`vmux: Tab group "${name}" created`);
+      }
+    }),
+
+    vscode.commands.registerCommand('vmux.deleteTabGroup', (item: { name: string }) => {
+      tabGroupMgr.delete(item.name);
+    }),
+
+    vscode.commands.registerCommand('vmux.renameTabGroup', async (item: { name: string }) => {
+      const newName = await vscode.window.showInputBox({ prompt: 'New name', value: item.name });
+      if (newName && newName !== item.name) {
+        tabGroupMgr.rename(item.name, newName);
+      }
+    }),
+
+    vscode.commands.registerCommand('vmux.addTerminalToTabGroup', async () => {
+      const groups = tabGroupMgr.list();
+      if (groups.length === 0) {
+        vscode.window.showInformationMessage('vmux: No tab groups. Create one first.');
+        return;
+      }
+      const terminals = terminalMgr.list();
+      if (terminals.length === 0) {
+        vscode.window.showInformationMessage('vmux: No terminals open.');
+        return;
+      }
+      const groupPick = await vscode.window.showQuickPick(
+        groups.map(g => ({ label: g.name, description: `${g.terminals.length} terminal(s)` })),
+        { placeHolder: 'Select tab group' },
+      );
+      if (!groupPick) return;
+      const termPick = await vscode.window.showQuickPick(
+        terminals.map(t => ({ label: t.name })),
+        { placeHolder: 'Select terminal to add' },
+      );
+      if (termPick) {
+        tabGroupMgr.addTerminal(groupPick.label, termPick.label);
+      }
+    }),
+
+    vscode.commands.registerCommand('vmux.removeTerminalFromTabGroup', (item: { terminalName: string; groupName: string }) => {
+      tabGroupMgr.removeTerminal(item.groupName, item.terminalName);
+    }),
+
+    vscode.commands.registerCommand('vmux.broadcastToTabGroup', async (item: { name: string }) => {
+      const text = await vscode.window.showInputBox({ prompt: 'Command to broadcast' });
+      if (!text) return;
+      const group = tabGroupMgr.get(item.name);
+      if (!group) return;
+      for (const t of group.terminals) {
+        try { terminalMgr.send(t, text); } catch { /* terminal may be gone */ }
+      }
+      vscode.window.showInformationMessage(`vmux: Broadcast to ${group.terminals.length} terminal(s)`);
+    }),
+
+    vscode.commands.registerCommand('vmux.focusTabGroup', (item: { name: string }) => {
+      const group = tabGroupMgr.get(item.name);
+      if (!group || group.terminals.length === 0) return;
+      try { terminalMgr.focus(group.terminals[0]!); } catch { /* terminal may be gone */ }
+    }),
   );
 
   // ─── IPC Method Handlers ─────────────────────────────────────
   const showSystemNotif = config.get<boolean>('systemNotifications', true);
 
+  router.register('ping', async () => 'PONG');
   router.register('notification.create', async (params) => {
     const title = params['title'] as string | undefined;
     if (!title) throw new Error('Invalid params: title is required');
@@ -260,7 +353,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   router.register('notification.list', async () => notificationMgr.list());
   router.register('notification.clear', async (params) => {
-    notificationMgr.clear(params['id'] as string | undefined);
+    const terminalId = params['terminalId'] as string | undefined;
+    if (terminalId) {
+      notificationMgr.clearByTerminal(terminalId);
+    } else {
+      notificationMgr.clear(params['id'] as string | undefined);
+    }
     return { ok: true };
   });
 
@@ -295,6 +393,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     terminalMgr.send(name, text);
     return { ok: true };
   });
+
+  router.register('agent.claudeHook', async (params) => {
+    const action = params['action'] as string | undefined;
+    if (!action) throw new Error('Invalid params: action is required');
+    return claudeHookMgr.handle({
+      action,
+      rawInput: params['rawInput'] as string | undefined,
+      terminalKey: params['terminalKey'] as string | undefined,
+      cwd: params['cwd'] as string | undefined,
+    });
+  });
+
+  router.register('agent.codexHook', async (params) => codexHookMgr.handle({
+    rawInput: params['rawInput'] as string | undefined,
+    terminalKey: params['terminalKey'] as string | undefined,
+  }));
+
+  router.register('agent.lifecycle', async (params) => basicAgentMgr.handle({
+    agent: params['agent'] as 'codex' | 'gemini',
+    action: params['action'] as 'start' | 'stop',
+    terminalKey: params['terminalKey'] as string | undefined,
+    cwd: params['cwd'] as string | undefined,
+    exitCode: params['exitCode'] as number | undefined,
+  }));
 
   router.register('session.save', async (params) => {
     const name = params['name'] as string | undefined;
@@ -391,6 +513,61 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       terminalMgr.send(preset.name, preset.command);
     }
     return info;
+  });
+
+  // ─── Tab Group IPC Handlers ──────────────────────────────────
+  router.register('tabgroup.create', async (params) => {
+    const name = params['name'] as string | undefined;
+    if (!name) throw new Error('Invalid params: name is required');
+    return tabGroupMgr.create(name, params['color'] as string | undefined);
+  });
+
+  router.register('tabgroup.delete', async (params) => {
+    const name = params['name'] as string | undefined;
+    if (!name) throw new Error('Invalid params: name is required');
+    tabGroupMgr.delete(name);
+    return { ok: true };
+  });
+
+  router.register('tabgroup.rename', async (params) => {
+    const oldName = params['oldName'] as string | undefined;
+    const newName = params['newName'] as string | undefined;
+    if (!oldName || !newName) throw new Error('Invalid params: oldName and newName are required');
+    return tabGroupMgr.rename(oldName, newName);
+  });
+
+  router.register('tabgroup.addTerminal', async (params) => {
+    const group = params['group'] as string | undefined;
+    const terminal = params['terminal'] as string | undefined;
+    if (!group || !terminal) throw new Error('Invalid params: group and terminal are required');
+    return tabGroupMgr.addTerminal(group, terminal);
+  });
+
+  router.register('tabgroup.removeTerminal', async (params) => {
+    const group = params['group'] as string | undefined;
+    const terminal = params['terminal'] as string | undefined;
+    if (!group || !terminal) throw new Error('Invalid params: group and terminal are required');
+    return tabGroupMgr.removeTerminal(group, terminal);
+  });
+
+  router.register('tabgroup.get', async (params) => {
+    const name = params['name'] as string | undefined;
+    if (!name) throw new Error('Invalid params: name is required');
+    return tabGroupMgr.get(name) ?? null;
+  });
+
+  router.register('tabgroup.list', async () => tabGroupMgr.list());
+
+  router.register('tabgroup.broadcast', async (params) => {
+    const group = params['group'] as string | undefined;
+    const text = params['text'] as string | undefined;
+    if (!group || !text) throw new Error('Invalid params: group and text are required');
+    const tabGroup = tabGroupMgr.get(group);
+    if (!tabGroup) throw new Error(`Invalid params: Tab group not found: ${group}`);
+    for (const t of tabGroup.terminals) {
+      try { terminalMgr.send(t, text); } catch { /* terminal may be gone */ }
+    }
+    return { ok: true, count: tabGroup.terminals.length };
   });
 
   // ─── Auto Restore ────────────────────────────────────────────

@@ -74,6 +74,10 @@
         {
           "id": "vmux.metadata",
           "name": "Metadata"
+        },
+        {
+          "id": "vmux.tabgroups",
+          "name": "Tab Groups"
         }
       ]
     },
@@ -101,8 +105,81 @@
       {
         "command": "vmux.launchAgentGrid",
         "title": "vmux: Launch Agent Grid"
+      },
+      {
+        "command": "vmux.createTabGroup",
+        "title": "vmux: Create Tab Group"
+      },
+      {
+        "command": "vmux.deleteTabGroup",
+        "title": "Delete Tab Group"
+      },
+      {
+        "command": "vmux.renameTabGroup",
+        "title": "Rename Tab Group"
+      },
+      {
+        "command": "vmux.addTerminalToTabGroup",
+        "title": "vmux: Add Terminal to Tab Group"
+      },
+      {
+        "command": "vmux.removeTerminalFromTabGroup",
+        "title": "Remove from Tab Group"
+      },
+      {
+        "command": "vmux.broadcastToTabGroup",
+        "title": "Broadcast to Tab Group"
+      },
+      {
+        "command": "vmux.focusTabGroup",
+        "title": "Focus Tab Group"
       }
     ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "vmux.deleteTabGroup",
+          "when": "viewItem == tabgroup",
+          "group": "inline"
+        },
+        {
+          "command": "vmux.renameTabGroup",
+          "when": "viewItem == tabgroup"
+        },
+        {
+          "command": "vmux.broadcastToTabGroup",
+          "when": "viewItem == tabgroup"
+        },
+        {
+          "command": "vmux.focusTabGroup",
+          "when": "viewItem == tabgroup"
+        },
+        {
+          "command": "vmux.removeTerminalFromTabGroup",
+          "when": "viewItem == tabgroup-terminal"
+        },
+        {
+          "command": "vmux.deleteSession",
+          "when": "viewItem == session",
+          "group": "inline"
+        },
+        {
+          "command": "vmux.restoreSessionFromTree",
+          "when": "viewItem == session"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "vmux.createTabGroup",
+          "when": "view == vmux.tabgroups",
+          "group": "navigation"
+        },
+        {
+          "command": "vmux.addTerminalToTabGroup",
+          "when": "view == vmux.tabgroups"
+        }
+      ]
+    },
     "keybindings": [
       {
         "command": "vmux.jumpToNotification",
@@ -118,7 +195,9 @@
     "configurationDefaults": {
       "terminal.integrated.defaultLocation": "editor",
       "terminal.integrated.confirmOnKill": "hasChildProcesses",
-      "terminal.integrated.confirmOnExit": "hasChildProcesses"
+      "terminal.integrated.confirmOnExit": "hasChildProcesses",
+      "terminal.integrated.tabs.title": "${process}",
+      "terminal.integrated.tabs.description": "${cwdFolder}"
     },
     "configuration": {
       "title": "vmux",

@@ -26,6 +26,7 @@ export interface TerminalInfo {
   name: string;
   cwd?: string;
   isActive: boolean;
+  command?: string;
 }
 
 // Phase 3: Agent Presets
@@ -36,6 +37,14 @@ export interface AgentPreset {
   cwd?: string;
   env?: Record<string, string>;
   shellPath?: string;
+}
+
+// Tab Groups
+
+export interface TabGroup {
+  name: string;
+  terminals: string[];   // terminal names
+  color?: string;        // ThemeIcon color
 }
 
 // Phase 2: Metadata

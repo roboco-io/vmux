@@ -225,6 +225,60 @@ server.tool('launch_agent_preset', 'Launch a terminal from a saved agent preset'
   return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
 });
 
+// ── Tab Group Tools ──
+
+server.tool('create_tabgroup', 'Create a tab group for organizing terminals', {
+  name: z.string().describe('Tab group name'),
+  color: z.string().optional().describe('Theme color identifier'),
+}, async ({ name, color }) => {
+  const result = await rpcCall('tabgroup.create', { name, color });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('delete_tabgroup', 'Delete a tab group', {
+  name: z.string().describe('Tab group name'),
+}, async ({ name }) => {
+  await rpcCall('tabgroup.delete', { name });
+  return { content: [{ type: 'text' as const, text: `Tab group deleted: ${name}` }] };
+});
+
+server.tool('rename_tabgroup', 'Rename a tab group', {
+  oldName: z.string().describe('Current tab group name'),
+  newName: z.string().describe('New tab group name'),
+}, async ({ oldName, newName }) => {
+  const result = await rpcCall('tabgroup.rename', { oldName, newName });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('list_tabgroups', 'List all tab groups', {}, async () => {
+  const result = await rpcCall('tabgroup.list');
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('add_to_tabgroup', 'Add a terminal to a tab group', {
+  group: z.string().describe('Tab group name'),
+  terminal: z.string().describe('Terminal name to add'),
+}, async ({ group, terminal }) => {
+  const result = await rpcCall('tabgroup.addTerminal', { group, terminal });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('remove_from_tabgroup', 'Remove a terminal from a tab group', {
+  group: z.string().describe('Tab group name'),
+  terminal: z.string().describe('Terminal name to remove'),
+}, async ({ group, terminal }) => {
+  const result = await rpcCall('tabgroup.removeTerminal', { group, terminal });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
+server.tool('broadcast_to_tabgroup', 'Send text to all terminals in a tab group', {
+  group: z.string().describe('Tab group name'),
+  text: z.string().describe('Text to broadcast'),
+}, async ({ group, text }) => {
+  const result = await rpcCall('tabgroup.broadcast', { group, text });
+  return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+});
+
 // ─── Start ──────────────────────────────────────────────────────
 
 async function main(): Promise<void> {

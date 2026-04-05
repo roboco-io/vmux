@@ -4,6 +4,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { createRequest } from '../shared/protocol.js';
+import { runChainedCodexNotify } from './codex-notify-chain.js';
 
 // ─── Argv Parser ────────────────────────────────────────────────
 
@@ -152,8 +153,19 @@ function printResult(result: unknown, json: boolean): void {
 
 async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
   const json = parsed.flags['json'] === 'true';
+  const terminalKey = parsed.flags['terminal-id']
+    ?? parsed.flags['terminal']
+    ?? process.env['VMUX_TERMINAL_NAME']
+    ?? process.env['VMUX_TERMINAL_ID']
+    ?? '';
 
   switch (parsed.command) {
+    case 'ping': {
+      const result = await rpcCall(address, 'ping', {});
+      printResult(result, json);
+      break;
+    }
+
     // ── Notifications ──
     case 'notify': {
       const title = parsed.flags['title'];
@@ -162,7 +174,7 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
         title,
         body: parsed.flags['body'],
         level: parsed.flags['level'] ?? 'info',
-        terminalId: parsed.flags['terminal-id'],
+        terminalId: terminalKey || undefined,
       });
       printResult(result, json);
       break;
@@ -175,6 +187,7 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
     case 'clear-notifications': {
       const result = await rpcCall(address, 'notification.clear', {
         id: parsed.flags['id'],
+        terminalId: parsed.flags['terminal'],
       });
       printResult(result, json);
       break;
@@ -246,7 +259,7 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
     case 'set-status': {
       const key = parsed.positional[0];
       const value = parsed.positional[1];
-      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      const terminalId = terminalKey;
       if (!key || !value) throw new Error('<key> and <value> arguments are required');
       const result = await rpcCall(address, 'metadata.set', {
         terminalId, key, value,
@@ -258,7 +271,7 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
     }
     case 'set-progress': {
       const value = parseFloat(parsed.positional[0] ?? '');
-      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      const terminalId = terminalKey;
       if (isNaN(value)) throw new Error('<value> argument (0.0-1.0) is required');
       const result = await rpcCall(address, 'metadata.progress', {
         terminalId, value,
@@ -269,11 +282,78 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
     }
     case 'log': {
       const message = parsed.positional[0];
-      const terminalId = parsed.flags['terminal'] ?? process.env['VMUX_TERMINAL_ID'] ?? '';
+      const terminalId = terminalKey;
       if (!message) throw new Error('<message> argument is required');
       const result = await rpcCall(address, 'metadata.log', {
         terminalId, message,
         level: parsed.flags['level'] ?? 'info',
+      });
+      printResult(result, json);
+      break;
+    }
+
+    // ── Claude Hooks ──
+    case 'claude-hook': {
+      const action = parsed.positional[0];
+      if (!action) throw new Error('<action> argument is required');
+      const rawInput = await new Promise<string>((resolve, reject) => {
+        if (process.stdin.isTTY) {
+          resolve('');
+          return;
+        }
+        let data = '';
+        process.stdin.setEncoding('utf8');
+        process.stdin.on('data', chunk => {
+          data += chunk;
+        });
+        process.stdin.on('end', () => resolve(data));
+        process.stdin.on('error', reject);
+      });
+      const result = await rpcCall(address, 'agent.claudeHook', {
+        action,
+        rawInput,
+        terminalKey: terminalKey || undefined,
+        cwd: parsed.flags['cwd'] ?? process.env['VMUX_CWD'],
+      });
+      printResult(result, json);
+      break;
+    }
+
+    case 'codex-hook': {
+      const rawArg = parsed.positional[0];
+      const rawInput = rawArg ?? await new Promise<string>((resolve, reject) => {
+        if (process.stdin.isTTY) {
+          resolve('');
+          return;
+        }
+        let data = '';
+        process.stdin.setEncoding('utf8');
+        process.stdin.on('data', chunk => {
+          data += chunk;
+        });
+        process.stdin.on('end', () => resolve(data));
+        process.stdin.on('error', reject);
+      });
+      const result = await rpcCall(address, 'agent.codexHook', {
+        rawInput,
+        terminalKey: terminalKey || undefined,
+      });
+      await runChainedCodexNotify(rawInput);
+      printResult(result, json);
+      break;
+    }
+
+    case 'agent-hook': {
+      const agent = parsed.positional[0];
+      const action = parsed.positional[1];
+      if (!agent || !action) throw new Error('<agent> and <action> arguments are required');
+      const exitCode = parsed.flags['exit-code'];
+      const result = await rpcCall(address, 'agent.lifecycle', {
+        agent,
+        action,
+        terminalKey: terminalKey || undefined,
+        cwd: parsed.flags['cwd'] ?? process.env['VMUX_CWD'],
+        exitCode: exitCode !== undefined ? parseInt(exitCode, 10) : undefined,
       });
       printResult(result, json);
       break;
@@ -331,6 +411,63 @@ async function runCommand(address: string, parsed: ParsedArgs): Promise<void> {
       break;
     }
 
+    // ── Tab Groups ──
+    case 'create-tabgroup': {
+      const name = parsed.flags['name'];
+      if (!name) throw new Error('--name is required');
+      const result = await rpcCall(address, 'tabgroup.create', {
+        name,
+        color: parsed.flags['color'],
+      });
+      printResult(result, json);
+      break;
+    }
+    case 'delete-tabgroup': {
+      const name = parsed.flags['name'];
+      if (!name) throw new Error('--name is required');
+      const result = await rpcCall(address, 'tabgroup.delete', { name });
+      printResult(result, json);
+      break;
+    }
+    case 'rename-tabgroup': {
+      const oldName = parsed.flags['name'];
+      const newName = parsed.flags['new-name'];
+      if (!oldName || !newName) throw new Error('--name and --new-name are required');
+      const result = await rpcCall(address, 'tabgroup.rename', { oldName, newName });
+      printResult(result, json);
+      break;
+    }
+    case 'list-tabgroups': {
+      const result = await rpcCall(address, 'tabgroup.list', {});
+      printResult(result, json);
+      break;
+    }
+    case 'add-to-tabgroup': {
+      const group = parsed.flags['group'];
+      const terminal = parsed.flags['terminal'];
+      if (!group || !terminal) throw new Error('--group and --terminal are required');
+      const result = await rpcCall(address, 'tabgroup.addTerminal', { group, terminal });
+      printResult(result, json);
+      break;
+    }
+    case 'remove-from-tabgroup': {
+      const group = parsed.flags['group'];
+      const terminal = parsed.flags['terminal'];
+      if (!group || !terminal) throw new Error('--group and --terminal are required');
+      const result = await rpcCall(address, 'tabgroup.removeTerminal', { group, terminal });
+      printResult(result, json);
+      break;
+    }
+    case 'broadcast-tabgroup': {
+      const group = parsed.flags['group'];
+      const text = parsed.positional[0];
+      if (!group) throw new Error('--group is required');
+      if (!text) throw new Error('<text> argument is required');
+      const result = await rpcCall(address, 'tabgroup.broadcast', { group, text });
+      printResult(result, json);
+      break;
+    }
+
     case '--help':
     case 'help':
     case '':
@@ -348,9 +485,10 @@ function printUsage(): void {
   process.stdout.write(`Usage: vmux <command> [options]
 
 Notifications:
+  ping
   notify --title <t> [--body <b>] [--level info|warning|error]
   list-notifications [--json]
-  clear-notifications [--id <id>]
+  clear-notifications [--id <id>] [--terminal <id>]
 
 Terminals:
   create-terminal --name <n> [--cwd <path>] [--shell <path>]
@@ -369,6 +507,11 @@ Metadata:
   set-progress <value> [--label <text>] [--terminal <id>]
   log <message> [--level info|progress|success|warning|error] [--terminal <id>]
 
+Claude:
+  claude-hook <session-start|notification|prompt-submit|stop|session-end|pre-tool-use> [--terminal <id>] [--cwd <path>]
+  codex-hook [payload-json]
+  agent-hook <codex|gemini> <start|stop> [--terminal <id>] [--cwd <path>] [--exit-code <n>]
+
 Agent Grid:
   launch-grid [--name <n>] [--rows <r>] [--cols <c>] [--cwd <path>]
   broadcast --grid <name> <text>
@@ -378,6 +521,15 @@ Agent Presets:
   save-agent --name <n> [--command <cmd>] [--cwd <path>] [--shell <path>]
   list-agents [--json]
   launch-agent --name <n>
+
+Tab Groups:
+  create-tabgroup --name <n> [--color <color>]
+  delete-tabgroup --name <n>
+  rename-tabgroup --name <n> --new-name <new>
+  list-tabgroups [--json]
+  add-to-tabgroup --group <g> --terminal <t>
+  remove-from-tabgroup --group <g> --terminal <t>
+  broadcast-tabgroup --group <g> <text>
 
 Options:
   --socket <path>   IPC socket path or HTTP URL
